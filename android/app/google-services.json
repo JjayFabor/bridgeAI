@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "869197296369",
+    "project_id": "bridgeaifirebase-auth",
+    "storage_bucket": "bridgeaifirebase-auth.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:869197296369:android:7d634532fbbf9347c5ef50",
+        "android_client_info": {
+          "package_name": "com.example.bridge_ai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAb0TvfSBJms8NupMrZImyIoPTKFO7XeqM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:869197296369:android:f1b288e8966a01c0c5ef50",
+        "android_client_info": {
+          "package_name": "com.example.bridgeai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAb0TvfSBJms8NupMrZImyIoPTKFO7XeqM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
