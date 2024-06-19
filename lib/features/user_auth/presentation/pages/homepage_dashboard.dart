@@ -1,6 +1,9 @@
-import 'package:bridgeai/features/user_auth/presentation/pages/add_subject_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import '../../../../global/user_provider_implementation/user_provider.dart';
+import 'add_subject_page.dart';
 
 class HomepageDashboard extends StatefulWidget {
   const HomepageDashboard({super.key});
@@ -11,6 +14,48 @@ class HomepageDashboard extends StatefulWidget {
 
 class _HomepageDashboardState extends State<HomepageDashboard> {
   List<String> subjects = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSubjects();
+    fetchTopics();
+  }
+
+  Future<void> _loadSubjects() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      subjects = prefs.getStringList('subjects') ?? [];
+    });
+  }
+
+  Future<void> _saveSubjects() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setStringList('subjects', subjects);
+  }
+
+  Future<void> _removeSubject(String subject) async {
+    setState(() {
+      subjects.remove(subject);
+    });
+    _saveSubjects();
+  }
+
+  Future<void> fetchTopics() async {
+    Map<String, dynamic>? profileData =
+        Provider.of<UserProvider>(context, listen: false).profileData;
+
+    if (profileData != null) {
+      String? name = profileData['name'];
+      int? age = profileData['age'];
+      int? grade = profileData['grade'];
+      String? country = profileData['country'];
+
+      print('Fetching topics for $name, age $age, grade $grade, from $country');
+    } else {
+      print('profileData is null');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +84,10 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
                     onPressed: () {
                       // Handle subject button click here
                       print("Clicked on $subject");
+                      fetchTopics();
+                    },
+                    onLongPress: () {
+                      _confirmDeleteSubject(context, subject);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
@@ -93,6 +142,34 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
       setState(() {
         subjects.add(newSubject);
       });
+      _saveSubjects();
     }
+  }
+
+  void _confirmDeleteSubject(BuildContext context, String subject) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Subject'),
+          content: Text('Are you sure you want to delete "$subject"?'),
+          actions: [
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Delete'),
+              onPressed: () {
+                _removeSubject(subject);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

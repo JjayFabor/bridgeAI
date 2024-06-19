@@ -1,12 +1,14 @@
-import 'dart:io';
-
-import 'package:bridgeai/features/user_auth/presentation/pages/login_screen.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import '../../../../global/user_provider_implementation/user_provider.dart';
+import 'homepage_dashboard.dart';
+import 'package:provider/provider.dart';
+import 'login_screen.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -17,7 +19,6 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   late User? _user;
-  Map<String, dynamic>? _profileData;
   String _errorMessage = '';
   bool _isLoading = false;
   bool _isEditing = false;
@@ -41,10 +42,19 @@ class _ProfilePageState extends State<ProfilePage> {
             await FirebaseFirestore.instance.collection('profiles').get();
 
         if (userProfileSnapshot.docs.isNotEmpty) {
+          Map<String, dynamic> profileData =
+              userProfileSnapshot.docs.first.data() as Map<String, dynamic>;
+          Provider.of<UserProvider>(context, listen: false)
+              .setProfileData(profileData);
+
           setState(() {
-            _profileData =
-                userProfileSnapshot.docs.first.data() as Map<String, dynamic>;
+            _nameController.text = profileData['name'];
+            _ageController.text = profileData['age'].toString();
+            _gradeController.text = profileData['grade'].toString();
+            _countryController.text = profileData['country'];
           });
+
+          print("Profile data set in UserProvider: $profileData");
         } else {
           setState(() {
             _errorMessage = 'Profile not found';
@@ -82,11 +92,12 @@ class _ProfilePageState extends State<ProfilePage> {
 
         await FirebaseFirestore.instance
             .collection('profiles')
-            .doc(_profileData!['userId'])
+            .doc(_user!.uid)
             .update({'profile_picture': downloadUrl});
 
-        setState(() {
-          _profileData!['profile_picture'] = downloadUrl;
+        Provider.of<UserProvider>(context, listen: false).setProfileData({
+          ...Provider.of<UserProvider>(context, listen: false).profileData!,
+          'profile_picture': downloadUrl
         });
       } catch (e) {
         setState(() {
@@ -106,18 +117,24 @@ class _ProfilePageState extends State<ProfilePage> {
       try {
         await FirebaseFirestore.instance
             .collection('profiles')
-            .doc(_profileData!['userId'])
+            .doc(_user!.uid)
             .update({
           'name': _nameController.text,
           'age': int.parse(_ageController.text),
           'grade': int.parse(_gradeController.text),
           'country': _countryController.text,
         });
+
+        Provider.of<UserProvider>(context, listen: false).setProfileData({
+          'name': _nameController.text,
+          'age': int.parse(_ageController.text),
+          'grade': int.parse(_gradeController.text),
+          'country': _countryController.text,
+          'profile_picture': Provider.of<UserProvider>(context, listen: false)
+              .profileData!['profile_picture'],
+        });
+
         setState(() {
-          _profileData!['name'] = _nameController.text;
-          _profileData!['age'] = int.parse(_ageController.text);
-          _profileData!['grade'] = int.parse(_gradeController.text);
-          _profileData!['country'] = _countryController.text;
           _isEditing = false;
         });
       } catch (e) {
@@ -130,18 +147,29 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _logout() async {
     await FirebaseAuth.instance.signOut();
-    // ignore: use_build_context_synchronously
-    Navigator.push(
-      // ignore: use_build_context_synchronously
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
         builder: (context) => const LoginScreen(),
+      ),
+      (route) => false,
+    );
+  }
+
+  void _navigateToDashboard(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const HomepageDashboard(),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    Map<String, dynamic>? _profileData =
+        Provider.of<UserProvider>(context).profileData;
+
     return Scaffold(
       appBar: AppBar(
           backgroundColor: Colors.blueAccent,
@@ -168,14 +196,15 @@ class _ProfilePageState extends State<ProfilePage> {
           ]),
       backgroundColor: Colors.blueAccent,
       body: Center(
+        // ignore: unnecessary_null_comparison
         child: _profileData != null
             ? Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (_profileData!['profile_picture'] != null)
+                  if (_profileData['profile_picture'] != null)
                     CircleAvatar(
                       backgroundImage:
-                          NetworkImage(_profileData!['profile_picture']),
+                          NetworkImage(_profileData['profile_picture']),
                       radius: 50,
                     )
                   else
@@ -228,23 +257,23 @@ class _ProfilePageState extends State<ProfilePage> {
                     Column(
                       children: [
                         Text(
-                          'Name: ${_profileData!['name']}',
+                          'Name: ${_profileData['name']}',
                           style: const TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          'Age: ${_profileData!['age']}',
+                          'Age: ${_profileData['age']}',
                           style: const TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          'Grade Level: ${_profileData!['grade']}',
+                          'Grade Level: ${_profileData['grade']}',
                           style: const TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          'Country: ${_profileData!['country']}',
+                          'Country: ${_profileData['country']}',
                           style: const TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 20),
@@ -262,6 +291,10 @@ class _ProfilePageState extends State<ProfilePage> {
                   Text(
                     _errorMessage,
                     style: const TextStyle(color: Colors.red),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => _navigateToDashboard(context),
+                    child: const Text('Go to Dashboard'),
                   ),
                 ],
               )

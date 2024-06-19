@@ -1,10 +1,14 @@
 import 'package:bridgeai/features/user_auth/firebase_auth_implementation/firebase_aut_services.dart';
+import 'package:bridgeai/features/user_auth/presentation/pages/homepage_dashboard.dart';
 import 'package:bridgeai/features/user_auth/presentation/widgets/form_container_widget.dart';
 import 'package:bridgeai/global/common/toast.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
+import '../../../../global/user_provider_implementation/user_provider.dart';
 import 'home_page.dart';
 import 'sign_up_screen.dart';
 
@@ -22,6 +26,46 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  String _errorMessage = '';
+
+  Future<void> _login() async {
+    try {
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      User? user = userCredential.user;
+
+      if (user != null) {
+        // Fetch the user profile data
+        QuerySnapshot profileSnapshot = await FirebaseFirestore.instance
+            .collection('profiles').get();
+
+        if (profileSnapshot.docs.isNotEmpty) {
+          Map<String, dynamic> profileData =
+              profileSnapshot.docs.first.data() as Map<String, dynamic>;
+          Provider.of<UserProvider>(context, listen: false)
+              .setProfileData(profileData);
+
+          // Navigate to the homepage dashboard
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        } else {
+          setState(() {
+            _errorMessage = 'Profile not found';
+          });
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'An error occurred while logging in: $e';
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -84,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Column(
                         children: [
                           ElevatedButton(
-                            onPressed: _signIn,
+                            onPressed: _login,
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
                                   const Color(0xFFACE2E1), // Button color
