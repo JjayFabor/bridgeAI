@@ -1,29 +1,29 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import google.generativeai as genai
 import json
 
 app = Flask(__name__)
 
-def register():
-    name = input("Name: ")
-    age = input("Age: ")
-    grade_level = input("Grade Level: ")
-    country = input("Country: ")
-    return name, age, grade_level, country
+# def register():
+#     name = input("Name: ")
+#     age = input("Age: ")
+#     grade_level = input("Grade Level: ")
+#     country = input("Country: ")
+#     return name, age, grade_level, country
 
-def welcome():
-    name, age, grade_level, country = register()
+# def welcome():
+#     name, age, grade_level, country = register()
 
-    print(f"\nWelcome {name}!")
-    print(f"You are {age} years old.")
-    print(f"Your grade level is {grade_level}.\n")
-    print(f"Your country is {country}.\n")
+#     print(f"\nWelcome {name}!")
+#     print(f"You are {age} years old.")
+#     print(f"Your grade level is {grade_level}.\n")
+#     print(f"Your country is {country}.\n")
 
-    return name, age, grade_level, country
+#     return name, age, grade_level, country
 
-def get_subject():
-    subject = input("Subject: ")
-    return subject
+# def get_subject():
+#     subject = input("Subject: ")
+#     return subject
 
 # Configure the generative AI API key
 genai.configure(api_key="AIzaSyCv4jeI3NtvwK28LBIp8OooWMmBPUx_sB0")
@@ -96,27 +96,40 @@ def reRun_model_if_needed(model, prompt, attempts=3):
             print(f"Attempt {attempt + 1} failed: {e}")
     return None
 def generate_topics(name, age, grade_level, subject, country):
-    prompt = f"""Create a list of 5 main topics for a student named {name} who is {age} years old, in grade {grade_level}, living in {country}, and wants to learn {subject}. The topics should cover fundamental and advanced concepts related to the subject."""
+    prompt = (
+        f"Create a list of 5 main topics for a student named {name} who is {age} years old, "
+        f"in grade {grade_level}, living in {country}, and wants to learn {subject}. "
+        "The topics should cover fundamental and advanced concepts related to the subject. "
+        "\nIt should be stored in with this json format: "
+        "{\n"
+        "    \"topics\": [\"topic1\", \"topic2\", \"topic3\", \"topic4\", \"topic5\"]\n"
+        "}"
+    )
     # response = topics_model.start_chat(history=[]).send_message(prompt)
     # return response.text
     return reRun_model_if_needed(topics_model, prompt)
 
-def generate_explanations(topics):
-    prompt = f"""Based on the following topics, provide detailed explanations for each one. Ensure the explanations are clear and suitable for self-study. Include real-world examples and a dictionary of key terms and their meanings.\n\n{topics}"""
-    # response = explanation_model.start_chat(history=[]).send_message(prompt)
-    # return response.text
-    return reRun_model_if_needed(explanation_model, prompt)
+# def generate_explanations(topics):
+#     prompt = f"""Based on the following topics, provide detailed explanations for each one. Ensure the explanations are clear and suitable for self-study. Include real-world examples and a dictionary of key terms and their meanings.\n\n{topics}"""
+#     # response = explanation_model.start_chat(history=[]).send_message(prompt)
+#     # return response.text
+#     return reRun_model_if_needed(explanation_model, prompt)
 
-def generate_exercises_and_quizzes(explanations):
-    prompt = f"""Based on the following explanations, create exercises and quizzes with solutions for each topic. Ensure the exercises help reinforce the concepts and the quizzes test the student's understanding. Each difficulty level should have a minimum of 10 questions and answers, increasing in complexity.\n\n{explanations}"""
-    # response = exercise_quiz_model.start_chat(history=[]).send_message(prompt)
-    # return response.text
-    return reRun_model_if_needed(exercise_quiz_model, prompt)
+# def generate_exercises_and_quizzes(explanations):
+#     prompt = f"""Based on the following explanations, create exercises and quizzes with solutions for each topic. Ensure the exercises help reinforce the concepts and the quizzes test the student's understanding. Each difficulty level should have a minimum of 10 questions and answers, increasing in complexity.\n\n{explanations}"""
+#     # response = exercise_quiz_model.start_chat(history=[]).send_message(prompt)
+#     # return response.text
+#     return reRun_model_if_needed(exercise_quiz_model, prompt)
 
 @app.route('/generate-topics', methods=['GET'])
 def generate_learning_materials():
-    name, age, grade_level, country = welcome()
-    subject = get_subject()
+    # name, age, grade_level, country = welcome()
+    # subject = get_subject()
+    name = request.args.get('name')
+    age = request.args.get('age')
+    grade_level = request.args.get('grade')
+    country = request.args.get('country')
+    subject = request.args.get('subject')
 
     if not all([name, age, grade_level, subject, country]):
         return jsonify({"error": "Missing one or more required fields: name, age, grade_level, subject, country"}), 400

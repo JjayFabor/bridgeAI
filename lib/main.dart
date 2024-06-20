@@ -1,5 +1,4 @@
 import 'package:bridgeai/features/app/splash_screen/splash_screen.dart';
-// import 'package:bridgeai/features/user_auth/presentation/pages/create_profile_screen.dart';
 import 'package:bridgeai/features/user_auth/presentation/pages/login_screen.dart';
 import 'package:bridgeai/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
