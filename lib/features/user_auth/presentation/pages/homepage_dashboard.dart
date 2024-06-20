@@ -84,7 +84,6 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
                     onPressed: () {
                       // Handle subject button click here
                       print("Clicked on $subject");
-                      fetchTopics();
                     },
                     onLongPress: () {
                       _confirmDeleteSubject(context, subject);

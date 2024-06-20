@@ -1,7 +1,4 @@
-import 'package:bridgeai/features/user_auth/firebase_auth_implementation/firebase_aut_services.dart';
-import 'package:bridgeai/features/user_auth/presentation/pages/homepage_dashboard.dart';
 import 'package:bridgeai/features/user_auth/presentation/widgets/form_container_widget.dart';
-import 'package:bridgeai/global/common/toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -20,13 +17,11 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  bool _isSignIn = false;
-
-  final FirebaseAuthServices _auth = FirebaseAuthServices();
+  final bool isLogIn = false;
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  String _errorMessage = '';
+  String errorMessage = '';
 
   Future<void> _login() async {
     try {
@@ -40,29 +35,33 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (user != null) {
         // Fetch the user profile data
-        QuerySnapshot profileSnapshot = await FirebaseFirestore.instance
-            .collection('profiles').get();
+        QuerySnapshot profileSnapshot =
+            await FirebaseFirestore.instance.collection('profiles').get();
 
         if (profileSnapshot.docs.isNotEmpty) {
           Map<String, dynamic> profileData =
               profileSnapshot.docs.first.data() as Map<String, dynamic>;
-          Provider.of<UserProvider>(context, listen: false)
-              .setProfileData(profileData);
+          if (mounted) {
+            Provider.of<UserProvider>(context, listen: false)
+                .setProfileData(profileData);
 
-          // Navigate to the homepage dashboard
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomePage()),
-          );
+            // Navigate to the homepage dashboard
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomePage()),
+            );
+          }
         } else {
-          setState(() {
-            _errorMessage = 'Profile not found';
-          });
+          if (mounted) {
+            setState(() {
+              errorMessage = 'Profile not found';
+            });
+          }
         }
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'An error occurred while logging in: $e';
+        errorMessage = 'An error occurred while logging in: $e';
       });
     }
   }
@@ -140,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                             ),
-                            child: _isSignIn
+                            child: isLogIn
                                 ? const CircularProgressIndicator(
                                     color: Colors.white,
                                   )
@@ -201,32 +200,5 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
-  }
-
-  void _signIn() async {
-    setState(() {
-      _isSignIn = true;
-    });
-
-    String email = _emailController.text;
-    String password = _passwordController.text;
-
-    User? user = await _auth.signInWithEmailandPassword(email, password);
-
-    setState(() {
-      _isSignIn = false;
-    });
-
-    if (user != null) {
-      Navigator.push(
-        // ignore: use_build_context_synchronously
-        context,
-        MaterialPageRoute(
-          builder: (context) => const HomePage(),
-        ),
-      );
-    } else {
-      showToast(message: 'An unknown error occurred.');
-    }
   }
 }

@@ -173,17 +173,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
     setState(() {
       _isSignUp = false;
     });
-
-    if (user != null) {
-      Navigator.push(
-        // ignore: use_build_context_synchronously
-        context,
-        MaterialPageRoute(
-          builder: (context) => const CreateProfileScreen(),
-        ),
-      );
+    
+    if (mounted) {
+      if (user != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const CreateProfileScreen(),
+              ),
+            );
+      }
     } else {
-      showToast(message: "An unknown error occurred. Please try again!");
+      if (mounted) {
+        showToast(message: "An unknown error occurred. Please try again!"); 
+      }
     }
   }
 }

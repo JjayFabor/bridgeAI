@@ -113,7 +113,7 @@ def generate_exercises_and_quizzes(explanations):
     # return response.text
     return reRun_model_if_needed(exercise_quiz_model, prompt)
 
-@app.route('/generate-learning-materials', methods=['GET'])
+@app.route('/generate-topics', methods=['GET'])
 def generate_learning_materials():
     name, age, grade_level, country = welcome()
     subject = get_subject()

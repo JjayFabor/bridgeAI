@@ -44,21 +44,25 @@ class _ProfilePageState extends State<ProfilePage> {
         if (userProfileSnapshot.docs.isNotEmpty) {
           Map<String, dynamic> profileData =
               userProfileSnapshot.docs.first.data() as Map<String, dynamic>;
-          Provider.of<UserProvider>(context, listen: false)
-              .setProfileData(profileData);
+          if (mounted) {
+            Provider.of<UserProvider>(context, listen: false)
+                .setProfileData(profileData);
 
-          setState(() {
-            _nameController.text = profileData['name'];
-            _ageController.text = profileData['age'].toString();
-            _gradeController.text = profileData['grade'].toString();
-            _countryController.text = profileData['country'];
-          });
+            setState(() {
+              _nameController.text = profileData['name'];
+              _ageController.text = profileData['age'].toString();
+              _gradeController.text = profileData['grade'].toString();
+              _countryController.text = profileData['country'];
+            });
 
-          print("Profile data set in UserProvider: $profileData");
+            print("Profile data set in UserProvider: $profileData");
+          }
         } else {
-          setState(() {
-            _errorMessage = 'Profile not found';
-          });
+          if (mounted) {
+            setState(() {
+              _errorMessage = 'Profile not found';
+            });
+          }
         }
       } catch (e) {
         setState(() {
@@ -95,15 +99,19 @@ class _ProfilePageState extends State<ProfilePage> {
             .doc(_user!.uid)
             .update({'profile_picture': downloadUrl});
 
-        Provider.of<UserProvider>(context, listen: false).setProfileData({
-          ...Provider.of<UserProvider>(context, listen: false).profileData!,
-          'profile_picture': downloadUrl
-        });
+        if (mounted) {
+          Provider.of<UserProvider>(context, listen: false).setProfileData({
+            ...Provider.of<UserProvider>(context, listen: false).profileData!,
+            'profile_picture': downloadUrl
+          });
+        }
       } catch (e) {
-        setState(() {
-          _errorMessage =
-              'An error occurred while uploading the profile picture: $e';
-        });
+        if (mounted) {
+          setState(() {
+            _errorMessage =
+                'An error occurred while uploading the profile picture: $e';
+          });
+        }
       } finally {
         setState(() {
           _isLoading = false;
@@ -125,35 +133,41 @@ class _ProfilePageState extends State<ProfilePage> {
           'country': _countryController.text,
         });
 
-        Provider.of<UserProvider>(context, listen: false).setProfileData({
-          'name': _nameController.text,
-          'age': int.parse(_ageController.text),
-          'grade': int.parse(_gradeController.text),
-          'country': _countryController.text,
-          'profile_picture': Provider.of<UserProvider>(context, listen: false)
-              .profileData!['profile_picture'],
-        });
+        if (mounted) {
+          Provider.of<UserProvider>(context, listen: false).setProfileData({
+            'name': _nameController.text,
+            'age': int.parse(_ageController.text),
+            'grade': int.parse(_gradeController.text),
+            'country': _countryController.text,
+            'profile_picture': Provider.of<UserProvider>(context, listen: false)
+                .profileData!['profile_picture'],
+          });
 
-        setState(() {
-          _isEditing = false;
-        });
+          setState(() {
+            _isEditing = false;
+          });
+        }
       } catch (e) {
-        setState(() {
-          _errorMessage = 'An error occurred while saving the profile: $e';
-        });
+        if (mounted) {
+          setState(() {
+            _errorMessage = 'An error occurred while saving the profile: $e';
+          });
+        }
       }
     }
   }
 
   void _logout() async {
     await FirebaseAuth.instance.signOut();
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const LoginScreen(),
-      ),
-      (route) => false,
-    );
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const LoginScreen(),
+        ),
+        (route) => false,
+      );
+    }
   }
 
   void _navigateToDashboard(BuildContext context) {
@@ -167,7 +181,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    Map<String, dynamic>? _profileData =
+    Map<String, dynamic>? profileData =
         Provider.of<UserProvider>(context).profileData;
 
     return Scaffold(
@@ -197,14 +211,14 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: Colors.blueAccent,
       body: Center(
         // ignore: unnecessary_null_comparison
-        child: _profileData != null
+        child: profileData != null
             ? Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (_profileData['profile_picture'] != null)
+                  if (profileData['profile_picture'] != null)
                     CircleAvatar(
                       backgroundImage:
-                          NetworkImage(_profileData['profile_picture']),
+                          NetworkImage(profileData['profile_picture']),
                       radius: 50,
                     )
                   else
@@ -257,23 +271,23 @@ class _ProfilePageState extends State<ProfilePage> {
                     Column(
                       children: [
                         Text(
-                          'Name: ${_profileData['name']}',
+                          'Name: ${profileData['name']}',
                           style: const TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          'Age: ${_profileData['age']}',
+                          'Age: ${profileData['age']}',
                           style: const TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          'Grade Level: ${_profileData['grade']}',
+                          'Grade Level: ${profileData['grade']}',
                           style: const TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          'Country: ${_profileData['country']}',
+                          'Country: ${profileData['country']}',
                           style: const TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 20),

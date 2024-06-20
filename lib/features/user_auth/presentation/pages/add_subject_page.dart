@@ -6,13 +6,9 @@ class AddSubjectPage extends StatelessWidget {
     'Mathematics',
     'Science',
     'History',
-    'Geography',
     'Literature',
     'Art',
     'Music',
-    'Physics',
-    'Chemistry',
-    'Biology'
   ];
 
   AddSubjectPage({super.key});
