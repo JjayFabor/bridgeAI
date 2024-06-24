@@ -111,16 +111,25 @@ def generate_topics(name, age, grade_level, subject, country):
 
 def generate_explanations(topic):
     prompt = f"""
-    Based on the following topic, provide detailed explanations. 
-    Ensure the explanations are clear and suitable for self-study. 
+    Based on the following topic, provide detailed explanations.
+    Ensure the explanations are clear and suitable for self-study.
     Include real-world examples and a dictionary of key terms and their meanings.
+    Each explanation and example should have a title for easy access.
 
     Topic: {topic}
 
     The output should be in the following JSON format:
     {{
-        "explanation": "detailed explanation here",
-        "examples": ["example1", "example2", ...],
+        "explanations": [
+            {{"title": "Title of Explanation 1", "content": "detailed explanation here"}},
+            {{"title": "Title of Explanation 2", "content": "detailed explanation here"}},
+            ...
+        ],
+        "examples": [
+            {{"title": "Title of Example 1", "content": "example1"}},
+            {{"title": "Title of Example 2", "content": "example2"}},
+            ...
+        ],
         "key_terms": {{
             "term1": "definition1",
             "term2": "definition2",

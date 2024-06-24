@@ -1,13 +1,10 @@
-// ignore_for_file: avoid_print
-
 import 'dart:convert';
-
-import 'package:bridgeai/features/user_auth/presentation/pages/subject_topics_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import '../../../../global/user_provider_implementation/user_provider.dart';
+import 'subject_topics_page.dart';
 import 'add_subject_page.dart';
 import 'package:http/http.dart' as http;
 
@@ -26,7 +23,7 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
   void initState() {
     super.initState();
     _loadSubjects();
-    fetchTopics();
+    fetchProfile();
   }
 
   Future<void> _loadSubjects() async {
@@ -57,7 +54,7 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
     _saveSubjects();
   }
 
-  Future<void> fetchTopics() async {
+  Future<void> fetchProfile() async {
     Map<String, dynamic>? profileData =
         Provider.of<UserProvider>(context, listen: false).profileData;
 
@@ -98,8 +95,6 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
         'subject': subject,
       }));
 
-      // print(
-      //     'Fetching topics for Subject $name, age $age, grade $grade, from $country, from $subject');
       if (response.statusCode == 200) {
         print(response.body);
         final decodedResponse = json.decode(response.body);
