@@ -111,29 +111,62 @@ def generate_topics(name, age, grade_level, subject, country):
 
 def generate_explanations(topic):
     prompt = f"""
-    Based on the following topic, provide detailed explanations.
-    Ensure the explanations are clear and suitable for self-study.
-    Include real-world examples and a dictionary of key terms and their meanings.
-    Each explanation and example should have a title for easy access.
+    Based on the following topic, provide a comprehensive course module.
+    Ensure the module is detailed and suitable for self-study, including multiple lessons with thorough explanations.
+    
+    Create a self-study course module on the topic "{topic}" with three detailed lessons. 
+    Each lesson should include:
+    - A detailed explanation or content (explain to a 10 year old child) that is not less than 5 sentences.
+    - Four real-world examples
+    - A summary (make it a paragraph form that a child can understand)
+    - Ten practice questions
+    - Key terms and definitions
+
+    Use LaTeX formatting enclosed in $...$ for inline math and $$...$$ for display math for any mathematical expressions.
 
     Topic: {topic}
 
     The output should be in the following JSON format:
     {{
-        "explanations": [
-            {{"title": "Title of Explanation 1", "content": "detailed explanation here"}},
-            {{"title": "Title of Explanation 2", "content": "detailed explanation here"}},
-            ...
-        ],
-        "examples": [
-            {{"title": "Title of Example 1", "content": "example1"}},
-            {{"title": "Title of Example 2", "content": "example2"}},
-            ...
-        ],
-        "key_terms": {{
-            "term1": "definition1",
-            "term2": "definition2",
-            ...
+        "module": {{
+            "title": "Title of Module",
+            "lessons": [
+                {{
+                    "title": "Title of Lesson 1",
+                    "content": "detailed explanation here",
+                    "examples": [
+                        {{"title": "Title of Example 1", "content": "example1", "explanation": "example1 description"}},
+                        {{"title": "Title of Example 2", "content": "example2", "explanation": "example2 description"}}
+                    ],
+                    "summary": "summary of the lesson",
+                    "practice_questions": [
+                        {{"question": "Question 1", "answer": "answer1"}},
+                        {{"question": "Question 2", "answer": "answer2"}}
+                    ],
+                    "key_terms": {{
+                        "term1": "definition1",
+                        "term2": "definition2"
+                    }}
+                }},
+                {{
+                    "title": "Title of Lesson 2",
+                    "content": "detailed explanation here",
+                    "examples": [
+                        {{"title": "Title of Example 1", "content": "example1", "explanation": "example1 description"}},
+                        {{"title": "Title of Example 2", "content": "example2", "explanation": "example2 description"}}
+                    ],
+                    "summary": "summary of the lesson",
+                    "practice_questions": [
+                        {{"question": "Question 1", "answer": "answer1"}},
+                        {{"question": "Question 2", "answer": "answer2"}}
+                    ],
+                    "key_terms": {{
+                        "term1": "definition1",
+                        "term2": "definition2"
+                    }}
+                }}
+                ...
+            ]
         }}
     }}
     """

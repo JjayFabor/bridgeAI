@@ -1,4 +1,4 @@
-import 'package:bridgeai/features/user_auth/presentation/pages/topic_lesson_page.dart';
+import 'package:bridgeai/features/user_auth/presentation/pages/LessonTopicPages/topic_lesson_page.dart';
 import 'package:flutter/material.dart';
 
 class SubjectTopicsPage extends StatefulWidget {

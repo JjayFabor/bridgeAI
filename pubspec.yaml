@@ -46,6 +46,11 @@ dependencies:
   http: ^1.2.1
   shared_preferences: ^2.2.3
   provider: ^6.1.2
+  flutter_markdown: ^0.7.2+1
+  flutter_math_fork: ^0.7.2
+  logger: ^2.3.0
+  carousel_slider: ^4.2.1
+  flip_card: ^0.7.0
 
 dev_dependencies:
   flutter_test:

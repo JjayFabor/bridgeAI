@@ -4,9 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:logger/logger.dart';
 import 'dart:io';
 import '../../../../global/user_provider_implementation/user_provider.dart';
-import 'homepage_dashboard.dart';
 import 'package:provider/provider.dart';
 import 'login_screen.dart';
 
@@ -28,6 +28,8 @@ class _ProfilePageState extends State<ProfilePage> {
   final TextEditingController _gradeController = TextEditingController();
   final TextEditingController _countryController = TextEditingController();
 
+  final Logger logger = Logger();
+  
   @override
   void initState() {
     super.initState();
@@ -55,7 +57,7 @@ class _ProfilePageState extends State<ProfilePage> {
               _countryController.text = profileData['country'];
             });
 
-            print("Profile data set in UserProvider: $profileData");
+            logger.i("Profile data set in UserProvider: $profileData");
           }
         } else {
           if (mounted) {
@@ -168,15 +170,6 @@ class _ProfilePageState extends State<ProfilePage> {
         (route) => false,
       );
     }
-  }
-
-  void _navigateToDashboard(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const HomepageDashboard(),
-      ),
-    );
   }
 
   @override
@@ -305,10 +298,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   Text(
                     _errorMessage,
                     style: const TextStyle(color: Colors.red),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => _navigateToDashboard(context),
-                    child: const Text('Go to Dashboard'),
                   ),
                 ],
               )

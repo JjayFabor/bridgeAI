@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import '../../../../global/user_provider_implementation/user_provider.dart';
@@ -18,6 +19,7 @@ class HomepageDashboard extends StatefulWidget {
 class _HomepageDashboardState extends State<HomepageDashboard> {
   List<String> subjects = [];
   Map<String, List<String>> subjectTopics = {};
+  final Logger logger = Logger();
 
   @override
   void initState() {
@@ -64,9 +66,9 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
       int? grade = profileData['grade'];
       String? country = profileData['country'];
 
-      print('Fetching topics for $name, age $age, grade $grade, from $country');
+      logger.i('Fetching topics for $name, age $age, grade $grade, from $country');
     } else {
-      print('profileData is null');
+      logger.i('profileData is null');
     }
   }
 
@@ -96,7 +98,7 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
       }));
 
       if (response.statusCode == 200) {
-        print(response.body);
+        logger.i(response.body);
         final decodedResponse = json.decode(response.body);
         List<String> topics = List<String>.from(decodedResponse['topics']);
         if (mounted) {
@@ -106,10 +108,10 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
           _saveSubjects();
         }
       } else {
-        print('Failed to load topics for $subject');
+        logger.i('Failed to load topics for $subject');
       }
     } else {
-      print('profileData is null');
+      logger.i('profileData is null');
     }
   }
 
@@ -139,7 +141,7 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
               ...subjects.map((subject) => ElevatedButton(
                     onPressed: () {
                       // Handle subject button click here
-                      print("Clicked on $subject");
+                      logger.i("Clicked on $subject");
                       _navigateToSubjectTopicScreen(context, subject);
                     },
                     onLongPress: () {
