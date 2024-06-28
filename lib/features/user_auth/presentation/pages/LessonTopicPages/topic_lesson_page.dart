@@ -8,6 +8,7 @@ import 'explanation_page.dart';
 import 'examples_page.dart';
 import 'practice_questions_page.dart';
 import 'key_terms_page.dart';
+import 'quizzes_page.dart';
 
 class TopicLessonPage extends StatefulWidget {
   final String topic;
@@ -27,6 +28,7 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
   int totalPages = 4; // Explanation, Examples, Practice Questions, Key Terms
   int totalLessons = 1; // Default value
   PageController pageController = PageController();
+  late Map<String, dynamic> currentLesson;
 
   @override
   void initState() {
@@ -94,24 +96,18 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
           currentPageIndex = 0;
           pageController.jumpToPage(0);
         } else {
-          // Show completion message
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('Congratulations!'),
-                content: const Text('Thank you for completing this lesson'),
-                actions: <Widget>[
-                  TextButton(
-                    child: const Text('OK'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
-          );
+          final explanationsJson = jsonEncode({
+            'content': currentLesson['content'],
+            'examples': currentLesson['examples'],
+            'summary': currentLesson['summary'],
+            'practice_questions': currentLesson['practice_questions'],
+            'key_terms': currentLesson['key_terms'],
+          });
+
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) =>
+                QuizzesPage(explanationsJson: explanationsJson),
+          ));
         }
       }
     });
@@ -150,8 +146,8 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
           } else if (snapshot.hasData) {
             final data = snapshot.data!['module'];
             final lessons = List<Map<String, dynamic>>.from(data['lessons']);
-            final currentLesson = lessons[currentLessonIndex];
-            totalLessons = lessons.length; 
+            currentLesson = lessons[currentLessonIndex];
+            totalLessons = lessons.length;
 
             return Column(
               children: [
@@ -191,6 +187,14 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
                         onPrev: _onPagePrevious,
                         isLastPage: currentLessonIndex == totalLessons - 1 &&
                             currentPageIndex == totalPages - 1,
+                        explanationsJson: jsonEncode({
+                          'content': currentLesson['content'],
+                          'examples': currentLesson['examples'],
+                          'summary': currentLesson['summary'],
+                          'practice_questions':
+                              currentLesson['practice_questions'],
+                          'key_terms': currentLesson['key_terms'],
+                        }),
                       ),
                     ],
                   ),

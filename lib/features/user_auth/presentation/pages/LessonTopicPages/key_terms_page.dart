@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'quizzes_page.dart';
 
 class KeyTermsPage extends StatelessWidget {
   final Map<String, String> keyTerms;
   final VoidCallback onNext;
   final VoidCallback onPrev;
   final bool isLastPage;
+  final String explanationsJson;
 
   const KeyTermsPage({
     super.key,
@@ -12,38 +14,53 @@ class KeyTermsPage extends StatelessWidget {
     required this.onNext,
     required this.onPrev,
     this.isLastPage = false,
+    required this.explanationsJson,
   });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Key Terms')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            const Text(
+              "Key Terms",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             Expanded(
               child: ListView.builder(
                 itemCount: keyTerms.length,
                 itemBuilder: (context, index) {
                   final term = keyTerms.keys.elementAt(index);
                   final definition = keyTerms.values.elementAt(index);
-                  return buildFlashCard(term, definition);
+                  return Column(
+                    children: [
+                      buildDictionaryEntry(term, definition),
+                      if (index < keyTerms.length - 1) const Divider(),
+                    ],
+                  );
                 },
               ),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                ElevatedButton(
+                ElevatedButton.icon(
                   onPressed: onPrev,
-                  child: const Text('Prev'),
+                  icon: const Icon(Icons.arrow_back),
+                  label: const Text('Prev'),
                 ),
-                ElevatedButton(
+                ElevatedButton.icon(
                   onPressed: isLastPage
-                      ? () => _showCompletionMessage(context)
+                      ? () => _navigateToQuizzesPage(context)
                       : onNext,
-                  child: Text(isLastPage ? 'Complete' : 'Next'),
+                  icon: const Icon(Icons.arrow_forward),
+                  label: const Text('Next'),
                 ),
               ],
             ),
@@ -53,37 +70,30 @@ class KeyTermsPage extends StatelessWidget {
     );
   }
 
-  void _showCompletionMessage(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Congratulations!'),
-          content: const Text('Thank you for completing this lesson'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
+  void _navigateToQuizzesPage(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => QuizzesPage(explanationsJson: explanationsJson),
+      ),
     );
   }
 
-  Widget buildFlashCard(String term, String definition) {
-    return Card(
-      elevation: 4,
-      child: ListTile(
-        title: Text(
-          term,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+  Widget buildDictionaryEntry(String term, String definition) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(vertical: 8.0),
+      title: Text(
+        term,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.blueAccent,
         ),
-        subtitle: Text(definition, style: const TextStyle(fontSize: 16)),
-        leading: const Icon(Icons.book, size: 50),
       ),
+      subtitle: Text(
+        definition,
+        style: const TextStyle(fontSize: 16, color: Colors.black87),
+      ),
+      leading: const Icon(Icons.book, size: 30, color: Colors.blueAccent),
     );
   }
 }

@@ -4,27 +4,6 @@ import json
 
 app = Flask(__name__)
 
-# def register():
-#     name = input("Name: ")
-#     age = input("Age: ")
-#     grade_level = input("Grade Level: ")
-#     country = input("Country: ")
-#     return name, age, grade_level, country
-
-# def welcome():
-#     name, age, grade_level, country = register()
-
-#     print(f"\nWelcome {name}!")
-#     print(f"You are {age} years old.")
-#     print(f"Your grade level is {grade_level}.\n")
-#     print(f"Your country is {country}.\n")
-
-#     return name, age, grade_level, country
-
-# def get_subject():
-#     subject = input("Subject: ")
-#     return subject
-
 # Configure the generative AI API key
 genai.configure(api_key="AIzaSyCv4jeI3NtvwK28LBIp8OooWMmBPUx_sB0")
 
@@ -75,11 +54,11 @@ explanation_model = genai.GenerativeModel(
         Add a dictionary of key terms and their meanings."""
 )
 
-exercise_quiz_model = genai.GenerativeModel(
+quiz_model = genai.GenerativeModel(
     model_name="gemini-1.5-pro",
     safety_settings=safety_settings,
     generation_config=generation_config,
-    system_instruction="""You will create exercises and quizzes for each topic, with solutions and varying difficulty levels. 
+    system_instruction="""You will create quizzes for each topic, with solutions and varying difficulty levels. 
         Ensure the exercises help reinforce the concepts and the quizzes test the student's understanding. 
         Each difficulty level should have a minimum of 10 questions and answers, increasing in complexity."""
 )
@@ -95,6 +74,7 @@ def reRun_model_if_needed(model, prompt, attempts=3):
         except (json.JSONDecodeError, Exception) as e:
             print(f"Attempt {attempt + 1} failed: {e}")
     return None
+
 def generate_topics(name, age, grade_level, subject, country):
     prompt = (
         f"Create a list of 5 main topics for a student named {name} who is {age} years old, "
@@ -105,8 +85,7 @@ def generate_topics(name, age, grade_level, subject, country):
         "    \"topics\": [\"topic1\", \"topic2\", \"topic3\", \"topic4\", \"topic5\"]\n"
         "}"
     )
-    # response = topics_model.start_chat(history=[]).send_message(prompt)
-    # return response.text
+
     return reRun_model_if_needed(topics_model, prompt)
 
 def generate_explanations(topic):
@@ -170,20 +149,42 @@ def generate_explanations(topic):
         }}
     }}
     """
-    # response = explanation_model.start_chat(history=[]).send_message(prompt)
-    # return response.text
+
     return reRun_model_if_needed(explanation_model, prompt)
 
-# def generate_exercises_and_quizzes(explanations):
-#     prompt = f"""Based on the following explanations, create exercises and quizzes with solutions for each topic. Ensure the exercises help reinforce the concepts and the quizzes test the student's understanding. Each difficulty level should have a minimum of 10 questions and answers, increasing in complexity.\n\n{explanations}"""
-#     # response = exercise_quiz_model.start_chat(history=[]).send_message(prompt)
-#     # return response.text
-#     return reRun_model_if_needed(exercise_quiz_model, prompt)
+def generate_quiz(explanations_json):
+    prompt = f"""
+    Based on the following detailed explanations of the topics, create quizzes with multiple choice questions and solutions for each lesson. Ensure the quizzes reinforce the concepts and test the student's understanding. Each lesson should have at least 10 questions.
+
+    Lesson Topic Explanations: {explanations_json}
+
+    The output should be in the following JSON format:
+    {{
+        "quizzes": [
+            {{
+                "lesson_title": "Title of Lesson 1",
+                "questions": [
+                    {{"question": "Question 1", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                    {{"question": "Question 2", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}}
+                ]
+            }},
+            {{
+                "lesson_title": "Title of Lesson 2",
+                "questions": [
+                    {{"question": "Question 1", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                    {{"question": "Question 2", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}}
+                ]
+            }}
+            ...
+        ]
+    }}
+    """
+    return reRun_model_if_needed(quiz_model, prompt)
+
+
 
 @app.route('/generate-topics', methods=['GET'])
-def generate_subject_topics():
-    # name, age, grade_level, country = welcome()
-    # subject = get_subject()
+def generate_topics_route():
     name = request.args.get('name')
     age = request.args.get('age')
     grade_level = request.args.get('grade')
@@ -196,12 +197,6 @@ def generate_subject_topics():
     topics = generate_topics(name, age, grade_level, subject, country)
     print("Topics:", topics)
 
-    # explanations = generate_explanations(topics)
-    # print("Explanations:", explanations)
-
-    # exercises_and_quizzes = generate_exercises_and_quizzes(explanations)
-    # print("Exercises and Quizzes:", exercises_and_quizzes)
-
     try:
         json_object = json.loads(topics)
         return jsonify(json_object)
@@ -209,7 +204,7 @@ def generate_subject_topics():
         return jsonify({"error": "Failed to generate valid JSON response from AI model."}), 500
 
 @app.route('/generate-topics-lesson', methods=['GET'])
-def generate_subject_topics_lesson():
+def generate_topics_lesson_route():
     topic = request.args.get('topic')
 
     if not all([topic]):
@@ -223,6 +218,24 @@ def generate_subject_topics_lesson():
         return jsonify(json_object)
     except json.JSONDecodeError:
         return jsonify({"error": "Failed to generate valid JSON response from AI model."}), 500
+
+
+@app.route('/generate-quiz', methods=['POST'])
+def generate_quiz_route():
+    explanations_json = request.json.get('explanations')
+
+    if not explanations_json:
+        return jsonify({"error": "Missing explanations JSON"}), 400
+
+    quiz = generate_quiz(explanations_json)
+    print("Quiz:", quiz)
+
+    try:
+        json_object = json.loads(quiz)
+        return jsonify(json_object)
+    except json.JSONDecodeError:
+        return jsonify({"error": "Failed to generate valid JSON response from AI model."}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)
