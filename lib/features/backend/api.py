@@ -4,8 +4,12 @@ import json
 
 app = Flask(__name__)
 
-# Configure the generative AI API key
-genai.configure(api_key="AIzaSyCv4jeI3NtvwK28LBIp8OooWMmBPUx_sB0")
+# Read the API key from the text file
+with open('lib/features/backend/api_key.txt', 'r') as file:
+    api_key = file.read().strip()
+
+# Configure with the API key
+genai.configure(api_key=api_key)
 
 # Generation configuration shared by all models
 generation_config = {
@@ -44,24 +48,15 @@ topics_model = genai.GenerativeModel(
         Make sure the topics cover fundamental and advanced concepts related to the subject and the grade level of the student."""
 )
 
-explanation_model = genai.GenerativeModel(
-    model_name="gemini-1.5-pro",
-    safety_settings=safety_settings,
-    generation_config=generation_config,
-    system_instruction="""You will provide detailed explanations for each topic. 
-        Each explanation should be clear and concise, ensuring the student can understand the material on their own. 
-        Include examples and relate them to real-world applications to make the content relatable.
-        Add a dictionary of key terms and their meanings."""
-)
-
-quiz_model = genai.GenerativeModel(
-    model_name="gemini-1.5-pro",
-    safety_settings=safety_settings,
-    generation_config=generation_config,
-    system_instruction="""You will create quizzes for each topic, with solutions and varying difficulty levels. 
-        Ensure the exercises help reinforce the concepts and the quizzes test the student's understanding. 
-        Each difficulty level should have a minimum of 10 questions and answers, increasing in complexity."""
-)
+combined_model = genai.GenerativeModel(
+        model_name="gemini-1.5-pro",
+        safety_settings=safety_settings,
+        generation_config=generation_config,
+        system_instruction="""You will provide detailed explanations and create quizzes for each topic. 
+            Ensure the explanations are clear and concise, with real-world examples, key terms, and practice questions. 
+            The quizzes should reinforce the concepts and test the student's understanding with multiple-choice questions 
+            and solutions."""
+    )
 
 def reRun_model_if_needed(model, prompt, attempts=3):
     for attempt in range(attempts):
@@ -88,7 +83,7 @@ def generate_topics(name, age, grade_level, subject, country):
 
     return reRun_model_if_needed(topics_model, prompt)
 
-def generate_explanations(topic):
+def generate_course_and_quiz(topic):
     prompt = f"""
     Based on the following topic, provide a comprehensive course module.
     Ensure the module is detailed and suitable for self-study, including multiple lessons with thorough explanations.
@@ -101,9 +96,7 @@ def generate_explanations(topic):
     - Ten practice questions
     - Key terms and definitions
 
-    Use LaTeX formatting enclosed in $...$ for inline math and $$...$$ for display math for any mathematical expressions.
-
-    Topic: {topic}
+    After creating the course module, create quizzes with multiple choice questions and solutions for each lesson. Ensure the quizzes reinforce the concepts and test the student's understanding. Each lesson should have at least 10 questions.
 
     The output should be in the following JSON format:
     {{
@@ -115,71 +108,87 @@ def generate_explanations(topic):
                     "content": "detailed explanation here",
                     "examples": [
                         {{"title": "Title of Example 1", "content": "example1", "explanation": "example1 description"}},
-                        {{"title": "Title of Example 2", "content": "example2", "explanation": "example2 description"}}
+                        {{"title": "Title of Example 2", "content": "example2", "explanation": "example2 description"}},
+                        {{"title": "Title of Example 3", "content": "example3", "explanation": "example3 description"}},
+                        {{"title": "Title of Example 4", "content": "example4", "explanation": "example4 description"}}
                     ],
                     "summary": "summary of the lesson",
                     "practice_questions": [
                         {{"question": "Question 1", "answer": "answer1"}},
-                        {{"question": "Question 2", "answer": "answer2"}}
+                        {{"question": "Question 2", "answer": "answer2"}},
+                        {{"question": "Question 3", "answer": "answer3"}},
+                        {{"question": "Question 4", "answer": "answer4"}},
+                        {{"question": "Question 5", "answer": "answer5"}},
+                        {{"question": "Question 6", "answer": "answer6"}},
+                        {{"question": "Question 7", "answer": "answer7"}},
+                        {{"question": "Question 8", "answer": "answer8"}},
+                        {{"question": "Question 9", "answer": "answer9"}},
+                        {{"question": "Question 10", "answer": "answer10"}}
                     ],
                     "key_terms": {{
                         "term1": "definition1",
                         "term2": "definition2"
-                    }}
+                    }},
+                    "quizzes": [
+                        {{"question": "Question 1", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 2", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 3", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 4", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 5", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 6", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 7", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 8", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 9", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 10", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}}
+                ]
                 }},
                 {{
                     "title": "Title of Lesson 2",
                     "content": "detailed explanation here",
                     "examples": [
                         {{"title": "Title of Example 1", "content": "example1", "explanation": "example1 description"}},
-                        {{"title": "Title of Example 2", "content": "example2", "explanation": "example2 description"}}
+                        {{"title": "Title of Example 2", "content": "example2", "explanation": "example2 description"}},
+                        {{"title": "Title of Example 3", "content": "example3", "explanation": "example3 description"}},
+                        {{"title": "Title of Example 4", "content": "example4", "explanation": "example4 description"}}
                     ],
                     "summary": "summary of the lesson",
                     "practice_questions": [
                         {{"question": "Question 1", "answer": "answer1"}},
-                        {{"question": "Question 2", "answer": "answer2"}}
+                        {{"question": "Question 2", "answer": "answer2"}},
+                        {{"question": "Question 3", "answer": "answer3"}},
+                        {{"question": "Question 4", "answer": "answer4"}},
+                        {{"question": "Question 5", "answer": "answer5"}},
+                        {{"question": "Question 6", "answer": "answer6"}},
+                        {{"question": "Question 7", "answer": "answer7"}},
+                        {{"question": "Question 8", "answer": "answer8"}},
+                        {{"question": "Question 9", "answer": "answer9"}},
+                        {{"question": "Question 10", "answer": "answer10"}}
                     ],
                     "key_terms": {{
                         "term1": "definition1",
                         "term2": "definition2"
-                    }}
-                }}
-                ...
+                    }},
+                    "quizzes": [
+                        {{"question": "Question 1", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 2", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 3", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 4", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 5", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 6", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 7", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 8", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 9", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 10", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}}
+                ]
+                }},
             ]
-        }}
-    }}
-    """
-
-    return reRun_model_if_needed(explanation_model, prompt)
-
-def generate_quiz(explanations_json):
-    prompt = f"""
-    Based on the following detailed explanations of the topics, create quizzes with multiple choice questions and solutions for each lesson. Ensure the quizzes reinforce the concepts and test the student's understanding. Each lesson should have at least 10 questions.
-
-    Lesson Topic Explanations: {explanations_json}
-
-    The output should be in the following JSON format:
-    {{
-        "quizzes": [
-            {{
-                "lesson_title": "Title of Lesson 1",
-                "questions": [
-                    {{"question": "Question 1", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
-                    {{"question": "Question 2", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}}
-                ]
-            }},
-            {{
-                "lesson_title": "Title of Lesson 2",
-                "questions": [
-                    {{"question": "Question 1", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
-                    {{"question": "Question 2", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}}
-                ]
-            }}
-            ...
+        }},
         ]
     }}
     """
-    return reRun_model_if_needed(quiz_model, prompt)
+
+    return reRun_model_if_needed(combined_model, prompt)
+
 
 
 
@@ -204,34 +213,17 @@ def generate_topics_route():
         return jsonify({"error": "Failed to generate valid JSON response from AI model."}), 500
 
 @app.route('/generate-topics-lesson', methods=['GET'])
-def generate_topics_lesson_route():
+def generate_courses_quiz_route():
     topic = request.args.get('topic')
 
     if not all([topic]):
         return jsonify({"error": "Missing one or more required fields: topics"}), 400
     
-    lesson_topic = generate_explanations(topic)
+    lesson_topic = generate_course_and_quiz(topic)
     print("Lesson Topics:", lesson_topic)
 
     try:
         json_object = json.loads(lesson_topic)
-        return jsonify(json_object)
-    except json.JSONDecodeError:
-        return jsonify({"error": "Failed to generate valid JSON response from AI model."}), 500
-
-
-@app.route('/generate-quiz', methods=['POST'])
-def generate_quiz_route():
-    explanations_json = request.json.get('explanations')
-
-    if not explanations_json:
-        return jsonify({"error": "Missing explanations JSON"}), 400
-
-    quiz = generate_quiz(explanations_json)
-    print("Quiz:", quiz)
-
-    try:
-        json_object = json.loads(quiz)
         return jsonify(json_object)
     except json.JSONDecodeError:
         return jsonify({"error": "Failed to generate valid JSON response from AI model."}), 500
