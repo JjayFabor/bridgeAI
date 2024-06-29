@@ -1,11 +1,10 @@
-import 'package:bridgeai/features/app/splash_screen/splash_screen.dart';
-import 'package:bridgeai/features/user_auth/presentation/pages/login_screen.dart';
-import 'package:bridgeai/firebase_options.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import 'global/user_provider_implementation/user_provider.dart';
+import 'global/provider_implementation/user_provider.dart';
+import 'features/app/splash_screen/splash_screen.dart';
+import 'features/user_auth/presentation/pages/login_screen.dart';
+import 'firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,8 +19,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => UserProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => UserProvider()),
+      ],
       child: const MaterialApp(
         debugShowCheckedModeBanner: false,
         home: SplashScreen(
