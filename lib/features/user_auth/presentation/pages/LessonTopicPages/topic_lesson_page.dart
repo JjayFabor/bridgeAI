@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
 
-import '../../../../../global/user_provider_implementation/user_provider.dart';
+import '../../../../../global/provider_implementation/user_provider.dart';
 import 'explanation_page.dart';
 import 'examples_page.dart';
 import 'practice_questions_page.dart';
@@ -14,8 +15,11 @@ class TopicLessonPage extends StatefulWidget {
   final String topic;
   final Map<String, Map<String, dynamic>> lessonCache;
 
-  const TopicLessonPage(
-      {super.key, required this.topic, required this.lessonCache});
+  const TopicLessonPage({
+    super.key,
+    required this.topic,
+    required this.lessonCache,
+  });
 
   @override
   State<TopicLessonPage> createState() => _TopicLessonPageState();
@@ -25,10 +29,12 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
   late Future<Map<String, dynamic>> topicLesson;
   int currentPageIndex = 0;
   int currentLessonIndex = 0;
-  int totalPages = 4; // Explanation, Examples, Practice Questions, Key Terms
+  int totalPages =
+      5; // Explanation, Examples, Practice Questions, Key Terms, Quizzes
   int totalLessons = 1; // Default value
   PageController pageController = PageController();
   late Map<String, dynamic> currentLesson;
+  final Logger logger = Logger();
 
   @override
   void initState() {
@@ -74,7 +80,20 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
                 "key_terms": {"Default Term": "No definition available"}
               }
             ]
-          }
+          },
+          "quizzes": [
+            {
+              "lesson_title": "Default Lesson",
+              "questions": [
+                {
+                  "question": "Default Question",
+                  "choices": ["Option 1", "Option 2", "Option 3", "Option 4"],
+                  "answer": "Correct Answer",
+                  "explanation": "Explanation for the correct answer"
+                }
+              ]
+            }
+          ]
         };
         userProvider.setLessonInCache(widget.topic, defaultResponse);
         return defaultResponse;
@@ -95,19 +114,6 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
           currentLessonIndex++;
           currentPageIndex = 0;
           pageController.jumpToPage(0);
-        } else {
-          final explanationsJson = jsonEncode({
-            'content': currentLesson['content'],
-            'examples': currentLesson['examples'],
-            'summary': currentLesson['summary'],
-            'practice_questions': currentLesson['practice_questions'],
-            'key_terms': currentLesson['key_terms'],
-          });
-
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) =>
-                QuizzesPage(explanationsJson: explanationsJson),
-          ));
         }
       }
     });
@@ -144,10 +150,14 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (snapshot.hasData) {
-            final data = snapshot.data!['module'];
-            final lessons = List<Map<String, dynamic>>.from(data['lessons']);
+            final data = snapshot.data!;
+            final lessons = List<Map<String, dynamic>>.from(
+                data['module']['lessons'] ?? []);
             currentLesson = lessons[currentLessonIndex];
             totalLessons = lessons.length;
+
+            // Debugging output
+            logger.i("Quizzes data: ${currentLesson['quizzes']}");
 
             return Column(
               children: [
@@ -161,8 +171,9 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
                     },
                     children: [
                       ExplanationPage(
-                        lessonTitle: currentLesson['title'],
-                        content: currentLesson['content'],
+                        lessonTitle: currentLesson['title'] ?? 'No title',
+                        content:
+                            currentLesson['content'] ?? 'No content available',
                         onNext: _onPageCompleted,
                         onPrev: currentPageIndex > 0 || currentLessonIndex > 0
                             ? _onPagePrevious
@@ -170,44 +181,31 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
                       ),
                       ExamplesPage(
                         examples: List<Map<String, dynamic>>.from(
-                            currentLesson['examples']),
+                            currentLesson['examples'] ?? []),
                         onNext: _onPageCompleted,
                         onPrev: _onPagePrevious,
                       ),
                       PracticeQuestionsPage(
                         questions: List<Map<String, dynamic>>.from(
-                            currentLesson['practice_questions']),
+                            currentLesson['practice_questions'] ?? []),
                         onNext: _onPageCompleted,
                         onPrev: _onPagePrevious,
                       ),
                       KeyTermsPage(
                         keyTerms: Map<String, String>.from(
-                            currentLesson['key_terms']),
+                            currentLesson['key_terms'] ?? {}),
                         onNext: _onPageCompleted,
                         onPrev: _onPagePrevious,
-                        isLastPage: currentLessonIndex == totalLessons - 1 &&
-                            currentPageIndex == totalPages - 1,
-                        explanationsJson: jsonEncode({
-                          'content': currentLesson['content'],
-                          'examples': currentLesson['examples'],
-                          'summary': currentLesson['summary'],
-                          'practice_questions':
-                              currentLesson['practice_questions'],
-                          'key_terms': currentLesson['key_terms'],
-                        }),
+                        isLastPage: false,
+                      ),
+                      QuizzesPage(
+                        quizzes: List<Map<String, dynamic>>.from(
+                            currentLesson['quizzes'] ?? []),
+                        onNext: _onPageCompleted,
+                        onPrev: _onPagePrevious,
+                        isLastPage: currentLessonIndex == totalLessons - 1,
                       ),
                     ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: LinearProgressIndicator(
-                    value: ((currentLessonIndex * totalPages) +
-                            currentPageIndex +
-                            1) /
-                        (totalLessons * totalPages),
-                    backgroundColor: Colors.grey[200],
-                    color: Colors.purple,
                   ),
                 ),
               ],

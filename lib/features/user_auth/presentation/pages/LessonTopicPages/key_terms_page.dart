@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'quizzes_page.dart';
 
 class KeyTermsPage extends StatelessWidget {
   final Map<String, String> keyTerms;
   final VoidCallback onNext;
   final VoidCallback onPrev;
   final bool isLastPage;
-  final String explanationsJson;
 
   const KeyTermsPage({
     super.key,
@@ -14,7 +12,6 @@ class KeyTermsPage extends StatelessWidget {
     required this.onNext,
     required this.onPrev,
     this.isLastPage = false,
-    required this.explanationsJson,
   });
 
   @override
@@ -56,9 +53,7 @@ class KeyTermsPage extends StatelessWidget {
                   label: const Text('Prev'),
                 ),
                 ElevatedButton.icon(
-                  onPressed: isLastPage
-                      ? () => _navigateToQuizzesPage(context)
-                      : onNext,
+                  onPressed: onNext,
                   icon: const Icon(Icons.arrow_forward),
                   label: const Text('Next'),
                 ),
@@ -66,14 +61,6 @@ class KeyTermsPage extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _navigateToQuizzesPage(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => QuizzesPage(explanationsJson: explanationsJson),
       ),
     );
   }
