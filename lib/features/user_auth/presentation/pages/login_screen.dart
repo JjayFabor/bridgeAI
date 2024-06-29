@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../global/user_provider_implementation/user_provider.dart';
+import '../../../../global/provider_implementation/user_provider.dart';
 import 'home_page.dart';
 import 'sign_up_screen.dart';
 

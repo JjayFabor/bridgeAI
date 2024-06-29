@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
-import '../../../../global/user_provider_implementation/user_provider.dart';
+import '../../../../global/provider_implementation/user_provider.dart';
 import 'subject_topics_page.dart';
 import 'add_subject_page.dart';
 import 'package:http/http.dart' as http;

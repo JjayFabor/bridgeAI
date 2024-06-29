@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 import 'dart:io';
-import '../../../../global/user_provider_implementation/user_provider.dart';
+import '../../../../global/provider_implementation/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'login_screen.dart';
 
