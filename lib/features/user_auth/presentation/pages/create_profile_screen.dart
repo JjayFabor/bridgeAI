@@ -1,28 +1,41 @@
-// ignore_for_file: use_build_context_synchronously
-
-import 'package:bridgeai/features/user_auth/presentation/pages/home_page.dart';
 import 'package:bridgeai/features/user_auth/presentation/widgets/form_container_widget.dart';
 import 'package:bridgeai/global/common/toast.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:bridgeai/global/provider_implementation/user_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'home_page.dart';
 
 class CreateProfileScreen extends StatefulWidget {
-  const CreateProfileScreen({super.key});
+  final String username;
+  final String email;
+  final String password;
+
+  const CreateProfileScreen({
+    super.key,
+    required this.username,
+    required this.email,
+    required this.password,
+  });
 
   @override
   State<CreateProfileScreen> createState() => _CreateProfileScreenState();
 }
 
 class _CreateProfileScreenState extends State<CreateProfileScreen> {
-  //bool _isCreated = false;
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _gradeController = TextEditingController();
   final TextEditingController _countryController = TextEditingController();
   String _errorMessage = "";
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   Future<void> _saveProfile() async {
     if (_formKey.currentState?.validate() ?? false) {
@@ -31,23 +44,48 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
         User? user = FirebaseAuth.instance.currentUser;
         if (user == null) {
           setState(() {
-            _errorMessage = 'You must be sign up to create a profile.';
+            _errorMessage = 'You must be signed up to create a profile.';
           });
           return;
         }
 
-        await FirebaseFirestore.instance.collection('profiles').add({
+        String userId = user.uid; // Get the current user's UID
+
+        // Use userId as the document ID
+        await FirebaseFirestore.instance
+            .collection('profiles')
+            .doc(userId)
+            .set({
           'name': _nameController.text,
           'age': int.parse(_ageController.text),
           'grade': int.parse(_gradeController.text),
           'country': _countryController.text,
-          'userId': user.uid, // Associate the profile with the user
+          'email': widget.email,
+          'username': widget.username,
+          'password': widget.password,
+          'userId': userId,
         });
+
+        // Save the profile data to the provider
+        if (mounted) {
+          Provider.of<UserProvider>(context, listen: false).setProfileData({
+            'name': _nameController.text,
+            'age': int.parse(_ageController.text),
+            'grade': int.parse(_gradeController.text),
+            'country': _countryController.text,
+            'email': widget.email,
+            'username': widget.username,
+            'userId': userId,
+          });
+        }
+
         showToast(message: "Profile created successfully");
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        }
       } catch (e) {
         setState(() {
           _errorMessage = 'An error occurred while saving the profile: $e';
@@ -74,7 +112,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                 Center(
                   child: Text(
                     'Create your Account',
-                    style: GoogleFonts.rammettoOne(
+                    style: GoogleFonts.cormorant(
                       textStyle: const TextStyle(
                         fontSize: 48,
                         fontWeight: FontWeight.bold,
@@ -83,11 +121,11 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(
-                  height: 15,
-                ),
+                const SizedBox(height: 15),
                 FormContainerWidget(
                   hintText: "Name",
+                  hintStyle: GoogleFonts.aBeeZee(
+                      textStyle: const TextStyle(color: Colors.black45)),
                   controller: _nameController,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -99,6 +137,8 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                 const SizedBox(height: 5),
                 FormContainerWidget(
                   hintText: "Age",
+                  hintStyle: GoogleFonts.aBeeZee(
+                      textStyle: const TextStyle(color: Colors.black45)),
                   isIntegerField: true,
                   controller: _ageController,
                   validator: (value) {
@@ -114,6 +154,8 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                 const SizedBox(height: 5),
                 FormContainerWidget(
                   hintText: "Grade Level",
+                  hintStyle: GoogleFonts.aBeeZee(
+                      textStyle: const TextStyle(color: Colors.black45)),
                   controller: _gradeController,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -125,6 +167,8 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                 const SizedBox(height: 5),
                 FormContainerWidget(
                   hintText: "Country",
+                  hintStyle: GoogleFonts.aBeeZee(
+                      textStyle: const TextStyle(color: Colors.black45)),
                   controller: _countryController,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -147,7 +191,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                   ),
                   child: Text(
                     'Save Profile',
-                    style: GoogleFonts.mitr(
+                    style: GoogleFonts.cormorant(
                       textStyle: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w500,

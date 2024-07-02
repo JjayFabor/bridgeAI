@@ -56,7 +56,7 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonResponse = json.decode(response.body);
       if (jsonResponse.isNotEmpty) {
-        userProvider.setLessonInCache(widget.topic, jsonResponse);
+        await userProvider.setLessonInCache(widget.topic, jsonResponse);
         return jsonResponse;
       } else {
         final defaultResponse = {
@@ -95,7 +95,7 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
             }
           ]
         };
-        userProvider.setLessonInCache(widget.topic, defaultResponse);
+        await userProvider.setLessonInCache(widget.topic, defaultResponse);
         return defaultResponse;
       }
     } else {

@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 import 'dart:io';
-import '../../../../global/provider_implementation/user_provider.dart';
 import 'package:provider/provider.dart';
-import 'login_screen.dart';
+import '../../../../global/provider_implementation/user_provider.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -18,7 +16,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  late User? _user;
+  User? _user;
   String _errorMessage = '';
   bool _isLoading = false;
   bool _isEditing = false;
@@ -27,25 +25,34 @@ class _ProfilePageState extends State<ProfilePage> {
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _gradeController = TextEditingController();
   final TextEditingController _countryController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   final Logger logger = Logger();
-  
+
   @override
   void initState() {
     super.initState();
-    _getUserProfile();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _getUserProfile();
+    });
   }
 
   Future<void> _getUserProfile() async {
     _user = FirebaseAuth.instance.currentUser;
     if (_user != null) {
       try {
-        final QuerySnapshot userProfileSnapshot =
-            await FirebaseFirestore.instance.collection('profiles').get();
+        logger.i("Fetching profile for UID: ${_user!.uid}");
+        final DocumentSnapshot userProfileSnapshot = await FirebaseFirestore
+            .instance
+            .collection('profiles')
+            .doc(_user!.uid)
+            .get();
 
-        if (userProfileSnapshot.docs.isNotEmpty) {
+        if (userProfileSnapshot.exists) {
           Map<String, dynamic> profileData =
-              userProfileSnapshot.docs.first.data() as Map<String, dynamic>;
+              userProfileSnapshot.data() as Map<String, dynamic>;
           if (mounted) {
             Provider.of<UserProvider>(context, listen: false)
                 .setProfileData(profileData);
@@ -55,11 +62,15 @@ class _ProfilePageState extends State<ProfilePage> {
               _ageController.text = profileData['age'].toString();
               _gradeController.text = profileData['grade'].toString();
               _countryController.text = profileData['country'];
+              _usernameController.text = profileData['username'];
+              _emailController.text = profileData['email'];
+              _passwordController.text = profileData['password'];
             });
 
             logger.i("Profile data set in UserProvider: $profileData");
           }
         } else {
+          logger.w("User profile does not exist for UID: ${_user!.uid}");
           if (mounted) {
             setState(() {
               _errorMessage = 'Profile not found';
@@ -67,6 +78,7 @@ class _ProfilePageState extends State<ProfilePage> {
           }
         }
       } catch (e) {
+        logger.e("Error fetching user profile: $e");
         setState(() {
           _errorMessage = 'An error occurred while fetching the profile: $e';
         });
@@ -133,6 +145,9 @@ class _ProfilePageState extends State<ProfilePage> {
           'age': int.parse(_ageController.text),
           'grade': int.parse(_gradeController.text),
           'country': _countryController.text,
+          'username': _usernameController.text,
+          'email': _emailController.text,
+          'password': _passwordController.text,
         });
 
         if (mounted) {
@@ -141,6 +156,9 @@ class _ProfilePageState extends State<ProfilePage> {
             'age': int.parse(_ageController.text),
             'grade': int.parse(_gradeController.text),
             'country': _countryController.text,
+            'username': _usernameController.text,
+            'email': _emailController.text,
+            'password': _passwordController.text,
             'profile_picture': Provider.of<UserProvider>(context, listen: false)
                 .profileData!['profile_picture'],
           });
@@ -159,51 +177,14 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  void _logout() async {
-    await FirebaseAuth.instance.signOut();
-    if (mounted) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const LoginScreen(),
-        ),
-        (route) => false,
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     Map<String, dynamic>? profileData =
         Provider.of<UserProvider>(context).profileData;
 
     return Scaffold(
-      appBar: AppBar(
-          backgroundColor: Colors.blueAccent,
-          toolbarHeight: 100,
-          automaticallyImplyLeading: false,
-          title: Text('Profile',
-              style: GoogleFonts.rammettoOne(
-                  textStyle: const TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-              ))),
-          actions: [
-            IconButton(
-                icon: const Icon(Icons.settings, size: 35),
-                onPressed: () {
-                  // Navigate to settings page
-                },
-                tooltip: 'Settings'),
-            IconButton(
-              icon: const Icon(Icons.logout, size: 35),
-              onPressed: _logout,
-              tooltip: 'Logout',
-            )
-          ]),
       backgroundColor: Colors.blueAccent,
       body: Center(
-        // ignore: unnecessary_null_comparison
         child: profileData != null
             ? Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -253,6 +234,21 @@ class _ProfilePageState extends State<ProfilePage> {
                           decoration:
                               const InputDecoration(labelText: 'Country'),
                         ),
+                        TextField(
+                          controller: _usernameController,
+                          decoration:
+                              const InputDecoration(labelText: 'Username'),
+                        ),
+                        TextField(
+                          controller: _emailController,
+                          decoration: const InputDecoration(labelText: 'Email'),
+                        ),
+                        TextField(
+                          controller: _passwordController,
+                          decoration:
+                              const InputDecoration(labelText: 'Password'),
+                          obscureText: true,
+                        ),
                         const SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: _saveProfile,
@@ -281,6 +277,21 @@ class _ProfilePageState extends State<ProfilePage> {
                         const SizedBox(height: 10),
                         Text(
                           'Country: ${profileData['country']}',
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Username: ${profileData['username']}',
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Email: ${profileData['email']}',
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Password: ${profileData['password']}',
                           style: const TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 20),

@@ -11,23 +11,28 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+
+  final userProvider = UserProvider();
+  await userProvider.loadLessonCache();
+
+  runApp( MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => userProvider),
+      ],
+      child: const MyApp(),
+    ),);
 }
 
 class MyApp extends StatelessWidget {
+
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => UserProvider()),
-      ],
-      child: const MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: SplashScreen(
-          child: LoginScreen(),
-        ),
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: SplashScreen(
+        child: LoginScreen(),
       ),
     );
   }

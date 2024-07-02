@@ -7,13 +7,26 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 
 import 'package:bridgeai/main.dart';
+import 'package:bridgeai/global/provider_implementation/user_provider.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+    // Create an instance of UserProvider
+    final userProvider = UserProvider();
+
+    // Load the lesson cache
+    await userProvider.loadLessonCache();
+
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(
+      ChangeNotifierProvider<UserProvider>.value(
+        value: userProvider,
+        child: const MyApp(),
+      ),
+    );
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

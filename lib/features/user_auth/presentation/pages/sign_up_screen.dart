@@ -93,15 +93,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               foregroundColor: Colors.black, // Text color
                               fixedSize: const Size(207, 51), // Button Size
                               shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(10),
-                                ),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10)),
                               ),
                             ),
                             child: _isSignUp
                                 ? const CircularProgressIndicator(
-                                    color: Colors.white,
-                                  )
+                                    color: Colors.white)
                                 : Text(
                                     'Sign Up',
                                     style: GoogleFonts.mitr(
@@ -118,13 +116,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             children: [
                               const Text(
                                 "Already have an account?",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                ),
+                                style: TextStyle(color: Colors.white),
                               ),
-                              const SizedBox(
-                                width: 5,
-                              ),
+                              const SizedBox(width: 5),
                               GestureDetector(
                                 onTap: () {
                                   Navigator.push(
@@ -143,7 +137,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     ),
                                   ),
                                 ),
-                              )
+                              ),
                             ],
                           ),
                           const SizedBox(height: 50), // Space at the bottom
@@ -167,25 +161,28 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     String email = _emailController.text;
     String password = _passwordController.text;
+    String username = _userController.text;
 
     User? user = await _auth.signUpWithEmailandPassword(email, password);
 
     setState(() {
       _isSignUp = false;
     });
-    
+
     if (mounted) {
       if (user != null) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const CreateProfileScreen(),
-              ),
-            );
-      }
-    } else {
-      if (mounted) {
-        showToast(message: "An unknown error occurred. Please try again!"); 
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CreateProfileScreen(
+              username: username,
+              email: email,
+              password: password,
+            ),
+          ),
+        );
+      } else {
+        showToast(message: "An unknown error occurred. Please try again!");
       }
     }
   }

@@ -1,11 +1,10 @@
 import 'package:bridgeai/features/user_auth/presentation/widgets/form_container_widget.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:bridgeai/global/provider_implementation/user_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-
-import '../../../../global/provider_implementation/user_provider.dart';
 import 'home_page.dart';
 import 'sign_up_screen.dart';
 
@@ -17,13 +16,16 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final bool isLogIn = false;
-
+  bool isLogIn = false;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   String errorMessage = '';
 
   Future<void> _login() async {
+    setState(() {
+      isLogIn = true;
+    });
+
     try {
       UserCredential userCredential =
           await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -35,12 +37,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (user != null) {
         // Fetch the user profile data
-        QuerySnapshot profileSnapshot =
-            await FirebaseFirestore.instance.collection('profiles').get();
+        DocumentSnapshot userProfileSnapshot = await FirebaseFirestore.instance
+            .collection('profiles')
+            .doc(user.uid)
+            .get();
 
-        if (profileSnapshot.docs.isNotEmpty) {
+        if (userProfileSnapshot.exists) {
           Map<String, dynamic> profileData =
-              profileSnapshot.docs.first.data() as Map<String, dynamic>;
+              userProfileSnapshot.data() as Map<String, dynamic>;
+
           if (mounted) {
             Provider.of<UserProvider>(context, listen: false)
                 .setProfileData(profileData);
@@ -55,6 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
           if (mounted) {
             setState(() {
               errorMessage = 'Profile not found';
+              isLogIn = false;
             });
           }
         }
@@ -62,6 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       setState(() {
         errorMessage = 'An error occurred while logging in: $e';
+        isLogIn = false;
       });
     }
   }
@@ -96,7 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 114),
                       Text(
                         'Bridge AI',
-                        style: GoogleFonts.rammettoOne(
+                        style: GoogleFonts.cormorant(
                           textStyle: const TextStyle(
                             fontSize: 48,
                             fontWeight: FontWeight.bold,
@@ -115,19 +122,23 @@ class _LoginScreenState extends State<LoginScreen> {
                       FormContainerWidget(
                         controller: _emailController,
                         hintText: "Email",
+                        hintStyle: GoogleFonts.aBeeZee(
+                            textStyle: const TextStyle(color: Colors.black45)),
                         isPasswordField: false,
                       ),
                       const SizedBox(height: 10),
                       FormContainerWidget(
                         controller: _passwordController,
                         hintText: "Password",
+                        hintStyle: GoogleFonts.aBeeZee(
+                            textStyle: const TextStyle(color: Colors.black45)),
                         isPasswordField: true,
                       ),
                       const SizedBox(height: 20),
                       Column(
                         children: [
                           ElevatedButton(
-                            onPressed: _login,
+                            onPressed: isLogIn ? null : _login,
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
                                   const Color(0xFFACE2E1), // Button color
@@ -145,10 +156,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                   )
                                 : Text(
                                     'Login',
-                                    style: GoogleFonts.mitr(
+                                    style: GoogleFonts.cormorant(
                                       textStyle: const TextStyle(
                                         fontSize: 26,
-                                        fontWeight: FontWeight.w500,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ),
@@ -157,12 +168,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Text(
-                                "Don't have an account?",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                ),
-                              ),
+                              Text("Don't have an account?",
+                                  style: GoogleFonts.aBeeZee(
+                                      textStyle: const TextStyle(
+                                    color: Colors.white,
+                                  ))),
                               const SizedBox(
                                 width: 5,
                               ),
@@ -178,7 +188,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 },
                                 child: Text(
                                   'Sign Up',
-                                  style: GoogleFonts.mitr(
+                                  style: GoogleFonts.cormorant(
                                     textStyle: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -191,6 +201,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 50), // Space at the bottom
                         ],
                       ),
+                      const SizedBox(height: 20),
+                      if (errorMessage.isNotEmpty)
+                        Text(
+                          errorMessage,
+                          style: const TextStyle(color: Colors.red),
+                        ),
                     ],
                   ),
                 ),

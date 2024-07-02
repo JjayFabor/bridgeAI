@@ -1,7 +1,11 @@
 import 'package:bridgeai/features/user_auth/presentation/pages/homepage_dashboard.dart';
+import 'package:bridgeai/features/user_auth/presentation/pages/login_screen.dart';
 import 'package:bridgeai/features/user_auth/presentation/pages/profile_page.dart';
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../../../global/provider_implementation/user_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,27 +17,141 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _page = 0;
 
+  void _logout() async {
+    await FirebaseAuth.instance.signOut();
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const LoginScreen(),
+        ),
+        (route) => false,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    Map<String, dynamic>? profileData =
+        Provider.of<UserProvider>(context).profileData;
+
     return Scaffold(
-        backgroundColor: Colors.blueAccent,
-        bottomNavigationBar: CurvedNavigationBar(
-          backgroundColor: Colors.blueAccent,
-          animationDuration: const Duration(milliseconds: 300),
-          items: const <Widget>[
-            Icon(Icons.home, size: 35),
-            Icon(Icons.search, size: 35),
-            Icon(Icons.person, size: 35),
-          ],
-          index: _page,
-          onTap: (selectedindex) {
-            // Handle buttons tap
-            setState(() {
-              _page = selectedindex;
-            });
-          },
+      appBar: AppBar(
+        toolbarHeight: 70,
+        title: Text(
+          getTitle(),
+          style: GoogleFonts.cormorant(
+            textStyle: const TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
-        body: Container(child: getSelectedWidget(index: _page)));
+        backgroundColor: Colors.blueAccent,
+      ),
+      drawer: Drawer(
+        child: Container(
+          color: Colors.grey[900], // Dark background color
+          child: Column(
+            children: <Widget>[
+              UserAccountsDrawerHeader(
+                decoration: const BoxDecoration(
+                  color: Colors.blueAccent,
+                ),
+                accountName: Text(
+                  profileData?['name'] ?? 'User Name',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                  ),
+                ),
+                accountEmail: Text(
+                  profileData?['email'] ?? 'user@example.com',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                  ),
+                ),
+                currentAccountPicture: CircleAvatar(
+                  backgroundImage: profileData?['profile_picture'] != null
+                      ? NetworkImage(profileData!['profile_picture'])
+                      : null,
+                  child: profileData?['profile_picture'] == null
+                      ? const Icon(
+                          Icons.person,
+                          size: 50,
+                          color: Colors.white,
+                        )
+                      : null,
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.home, color: Colors.white),
+                title:
+                    const Text('Home', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  setState(() {
+                    _page = 0;
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.search, color: Colors.white),
+                title:
+                    const Text('Search', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  setState(() {
+                    _page = 1;
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.person, color: Colors.white),
+                title: const Text('Profile',
+                    style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  setState(() {
+                    _page = 2;
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+              const Spacer(),
+              ListTile(
+                leading: const Icon(Icons.settings, color: Colors.white),
+                title: const Text('Settings',
+                    style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  // Navigate to settings page
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.logout, color: Colors.white),
+                title:
+                    const Text('Logout', style: TextStyle(color: Colors.white)),
+                onTap: _logout,
+              ),
+            ],
+          ),
+        ),
+      ),
+      body: Container(child: getSelectedWidget(index: _page)),
+    );
+  }
+
+  String getTitle() {
+    switch (_page) {
+      case 0:
+        return 'Dashboard';
+      case 1:
+        return 'Search';
+      case 2:
+        return 'Profile';
+      default:
+        return 'Dashboard';
+    }
   }
 
   Widget getSelectedWidget({required int index}) {

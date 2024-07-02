@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class FormContainerWidget extends StatefulWidget {
   final TextEditingController? controller;
@@ -13,6 +14,7 @@ class FormContainerWidget extends StatefulWidget {
   final ValueChanged<String>? onFieldSubmitted;
   final TextInputType? inputType;
   final bool? isIntegerField;
+  final TextStyle? hintStyle;
 
   const FormContainerWidget({
     super.key,
@@ -27,6 +29,7 @@ class FormContainerWidget extends StatefulWidget {
     this.onFieldSubmitted,
     this.inputType,
     this.isIntegerField,
+    this.hintStyle,
   });
 
   @override
@@ -64,7 +67,7 @@ class _FormContainerWidgetState extends State<FormContainerWidget> {
         decoration: InputDecoration(
           filled: true,
           hintText: widget.hintText,
-          hintStyle: const TextStyle(color: Colors.black45),
+          hintStyle: widget.hintStyle ?? GoogleFonts.aBeeZee(),
           errorStyle: const TextStyle(color: Colors.red),
           suffixIcon: widget.isPasswordField == true
               ? GestureDetector(

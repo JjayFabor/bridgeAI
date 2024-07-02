@@ -1,13 +1,14 @@
 import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
 import '../../../../global/provider_implementation/user_provider.dart';
 import 'subject_topics_page.dart';
 import 'add_subject_page.dart';
-import 'package:http/http.dart' as http;
 
 class HomepageDashboard extends StatefulWidget {
   const HomepageDashboard({super.key});
@@ -17,8 +18,10 @@ class HomepageDashboard extends StatefulWidget {
 }
 
 class _HomepageDashboardState extends State<HomepageDashboard> {
+  late User? _user;
   List<String> subjects = [];
   Map<String, List<String>> subjectTopics = {};
+  Set<String> loadingSubjects = {};
   final Logger logger = Logger();
 
   @override
@@ -56,19 +59,58 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
     _saveSubjects();
   }
 
+  Future<void> _clearCachedSubjects() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('subjects');
+    await prefs.remove('subjectTopics');
+    setState(() {
+      subjects = [];
+      subjectTopics = {};
+    });
+  }
+
+  Future<void> _storeLastUserId(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('lastUserId', userId);
+  }
+
+  Future<String?> _getLastUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('lastUserId');
+  }
+
   Future<void> fetchProfile() async {
-    Map<String, dynamic>? profileData =
-        Provider.of<UserProvider>(context, listen: false).profileData;
+    _user = FirebaseAuth.instance.currentUser;
+    if (_user != null) {
+      String? lastUserId = await _getLastUserId();
+      if (lastUserId != _user!.uid) {
+        await _clearCachedSubjects();
+        await _storeLastUserId(_user!.uid);
+      }
+      // Now fetch and load the profile as before
+      if (mounted) {
+        Map<String, dynamic>? profileData =
+            Provider.of<UserProvider>(context, listen: false).profileData;
+        if (profileData != null) {
+          String? name = profileData['name'];
+          int? age = profileData['age'];
+          int? grade = profileData['grade'];
+          String? country = profileData['country'];
+          String? userId = profileData['userId'];
+          String? email = profileData['email'];
+          String? password = profileData['password'];
+          String? username = profileData['username'];
 
-    if (profileData != null) {
-      String? name = profileData['name'];
-      int? age = profileData['age'];
-      int? grade = profileData['grade'];
-      String? country = profileData['country'];
+          logger.i(
+              'Fetched topics for $name $age $grade $country $email $password $username $userId');
 
-      logger.i('Fetching topics for $name, age $age, grade $grade, from $country');
-    } else {
-      logger.i('profileData is null');
+          for (String subject in subjects) {
+            await fetchTopicsForSubject(subject);
+          }
+        } else {
+          logger.i('profileData is null');
+        }
+      }
     }
   }
 
@@ -77,6 +119,10 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
         subjectTopics[subject]!.isNotEmpty) {
       return;
     }
+
+    setState(() {
+      loadingSubjects.add(subject);
+    });
 
     Map<String, dynamic>? profileData =
         Provider.of<UserProvider>(context, listen: false).profileData;
@@ -88,14 +134,15 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
       String? country = profileData['country'];
 
       final response = await http.get(
-          Uri.parse('http://10.0.2.2:5000/generate-topics')
-              .replace(queryParameters: {
-        'name': name,
-        'age': age.toString(),
-        'grade': grade.toString(),
-        'country': country,
-        'subject': subject,
-      }));
+        Uri.parse('http://10.0.2.2:5000/generate-topics')
+            .replace(queryParameters: {
+          'name': name,
+          'age': age.toString(),
+          'grade': grade.toString(),
+          'country': country,
+          'subject': subject,
+        }),
+      );
 
       if (response.statusCode == 200) {
         logger.i(response.body);
@@ -104,31 +151,27 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
         if (mounted) {
           setState(() {
             subjectTopics[subject] = topics;
+            loadingSubjects.remove(subject);
           });
           _saveSubjects();
         }
       } else {
         logger.i('Failed to load topics for $subject');
+        setState(() {
+          loadingSubjects.remove(subject);
+        });
       }
     } else {
       logger.i('profileData is null');
+      setState(() {
+        loadingSubjects.remove(subject);
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.blueAccent,
-        toolbarHeight: 100,
-        automaticallyImplyLeading: false,
-        title: Text('Dashboard',
-            style: GoogleFonts.rammettoOne(
-                textStyle: const TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-            ))),
-      ),
       backgroundColor: Colors.blueAccent,
       body: Padding(
         padding: const EdgeInsets.all(25.0),
@@ -138,32 +181,41 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
             spacing: 10,
             runSpacing: 10,
             children: [
-              ...subjects.map((subject) => ElevatedButton(
-                    onPressed: () {
-                      // Handle subject button click here
-                      logger.i("Clicked on $subject");
-                      _navigateToSubjectTopicScreen(context, subject);
-                    },
-                    onLongPress: () {
-                      _confirmDeleteSubject(context, subject);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      fixedSize: const Size(175, 175),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      shadowColor: Colors.black26,
-                      elevation: 5,
+              ...subjects.map((subject) {
+                final isLoading = loadingSubjects.contains(subject);
+                return ElevatedButton(
+                  onPressed: isLoading
+                      ? null
+                      : () {
+                          logger.i("Clicked on $subject");
+                          _navigateToSubjectTopicScreen(context, subject);
+                        },
+                  onLongPress: isLoading
+                      ? null
+                      : () {
+                          _confirmDeleteSubject(context, subject);
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    fixedSize: const Size(175, 175),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Text(
-                      subject,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        color: Colors.black,
-                      ),
-                    ),
-                  )),
+                    shadowColor: Colors.black26,
+                    elevation: 5,
+                  ),
+                  child: isLoading
+                      ? const CircularProgressIndicator()
+                      : Text(subject,
+                          style: GoogleFonts.cormorant(
+                            textStyle: const TextStyle(
+                              fontSize: 24,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )),
+                );
+              }),
               ElevatedButton(
                 onPressed: () {
                   _navigateToAddSubjectScreen(context);
