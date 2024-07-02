@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
@@ -23,6 +24,7 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
   Map<String, List<String>> subjectTopics = {};
   Set<String> loadingSubjects = {};
   final Logger logger = Logger();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   void initState() {
@@ -52,6 +54,16 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
   }
 
   Future<void> _removeSubject(String subject) async {
+    if (_user != null) {
+      // Remove subject from Firestore
+      DocumentReference subjectRef = _firestore
+          .collection('profiles')
+          .doc(_user!.uid)
+          .collection('subjects')
+          .doc(subject);
+      await subjectRef.delete();
+    }
+
     setState(() {
       subjects.remove(subject);
       subjectTopics.remove(subject);
@@ -87,6 +99,7 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
         await _clearCachedSubjects();
         await _storeLastUserId(_user!.uid);
       }
+      
       // Now fetch and load the profile as before
       if (mounted) {
         Map<String, dynamic>? profileData =
@@ -153,7 +166,9 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
             subjectTopics[subject] = topics;
             loadingSubjects.remove(subject);
           });
-          _saveSubjects();
+          await _saveSubjects();
+          await _saveTopicsToFirestore(
+              subject, topics); // Save topics to Firestore
         }
       } else {
         logger.i('Failed to load topics for $subject');
@@ -165,6 +180,32 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
       logger.i('profileData is null');
       setState(() {
         loadingSubjects.remove(subject);
+      });
+    }
+  }
+
+  Future<void> _saveTopicsToFirestore(
+      String subject, List<String> topics) async {
+    if (_user != null) {
+      DocumentReference subjectRef = _firestore
+          .collection('profiles')
+          .doc(_user!.uid)
+          .collection('subjects')
+          .doc(subject);
+      for (String topic in topics) {
+        await subjectRef.collection('topics').doc(topic).set({
+          'name': topic,
+        });
+      }
+    }
+  }
+
+  Future<void> _addSubjectToFirestore(String subject) async {
+    if (_user != null) {
+      DocumentReference userRef =
+          _firestore.collection('profiles').doc(_user!.uid);
+      await userRef.collection('subjects').doc(subject).set({
+        'progress': 0,
       });
     }
   }
@@ -255,6 +296,7 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
           subjectTopics[newSubject] = [];
         });
         await fetchTopicsForSubject(newSubject); // fetch topic for new subject
+        await _addSubjectToFirestore(newSubject); // add subject to Firestore
         if (mounted) {
           _saveSubjects();
         }
@@ -297,8 +339,8 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
             ),
             TextButton(
               child: const Text('Delete'),
-              onPressed: () {
-                _removeSubject(subject);
+              onPressed: () async {
+                await _removeSubject(subject);
                 Navigator.of(context).pop();
               },
             ),
