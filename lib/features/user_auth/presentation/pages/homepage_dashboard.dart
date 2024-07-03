@@ -35,16 +35,18 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
 
   Future<void> _loadSubjects() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      subjects = prefs.getStringList('subjects') ?? [];
-      final String? storedSubjectTopics = prefs.getString('subjectTopics');
-      if (storedSubjectTopics != null) {
-        final Map<String, dynamic> decodedTopics =
-            json.decode(storedSubjectTopics);
-        subjectTopics = decodedTopics
-            .map((key, value) => MapEntry(key, List<String>.from(value)));
-      }
-    });
+    if (mounted) {
+      setState(() {
+        subjects = prefs.getStringList('subjects') ?? [];
+        final String? storedSubjectTopics = prefs.getString('subjectTopics');
+        if (storedSubjectTopics != null) {
+          final Map<String, dynamic> decodedTopics =
+              json.decode(storedSubjectTopics);
+          subjectTopics = decodedTopics
+              .map((key, value) => MapEntry(key, List<String>.from(value)));
+        }
+      });
+    }
   }
 
   Future<void> _saveSubjects() async {
@@ -55,30 +57,25 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
 
   Future<void> _removeSubject(String subject) async {
     if (_user != null) {
-      // Remove subject from Firestore
-      DocumentReference subjectRef = _firestore
-          .collection('profiles')
-          .doc(_user!.uid)
-          .collection('subjects')
-          .doc(subject);
-      await subjectRef.delete();
+      // Simply remove subject and its topics from local storage
+      setState(() {
+        subjects.remove(subject);
+        subjectTopics.remove(subject);
+      });
+      await _saveSubjects();
     }
-
-    setState(() {
-      subjects.remove(subject);
-      subjectTopics.remove(subject);
-    });
-    _saveSubjects();
   }
 
   Future<void> _clearCachedSubjects() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('subjects');
     await prefs.remove('subjectTopics');
-    setState(() {
-      subjects = [];
-      subjectTopics = {};
-    });
+    if (mounted) {
+      setState(() {
+        subjects = [];
+        subjectTopics = {};
+      });
+    }
   }
 
   Future<void> _storeLastUserId(String userId) async {
@@ -99,8 +96,7 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
         await _clearCachedSubjects();
         await _storeLastUserId(_user!.uid);
       }
-      
-      // Now fetch and load the profile as before
+
       if (mounted) {
         Map<String, dynamic>? profileData =
             Provider.of<UserProvider>(context, listen: false).profileData;
@@ -133,9 +129,11 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
       return;
     }
 
-    setState(() {
-      loadingSubjects.add(subject);
-    });
+    if (mounted) {
+      setState(() {
+        loadingSubjects.add(subject);
+      });
+    }
 
     Map<String, dynamic>? profileData =
         Provider.of<UserProvider>(context, listen: false).profileData;
@@ -167,20 +165,23 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
             loadingSubjects.remove(subject);
           });
           await _saveSubjects();
-          await _saveTopicsToFirestore(
-              subject, topics); // Save topics to Firestore
+          await _saveTopicsToFirestore(subject, topics);
         }
       } else {
         logger.i('Failed to load topics for $subject');
+        if (mounted) {
+          setState(() {
+            loadingSubjects.remove(subject);
+          });
+        }
+      }
+    } else {
+      logger.i('profileData is null');
+      if (mounted) {
         setState(() {
           loadingSubjects.remove(subject);
         });
       }
-    } else {
-      logger.i('profileData is null');
-      setState(() {
-        loadingSubjects.remove(subject);
-      });
     }
   }
 
@@ -229,12 +230,12 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
                       ? null
                       : () {
                           logger.i("Clicked on $subject");
-                          _navigateToSubjectTopicScreen(context, subject);
+                          _navigateToSubjectTopicScreen(subject);
                         },
                   onLongPress: isLoading
                       ? null
                       : () {
-                          _confirmDeleteSubject(context, subject);
+                          _confirmDeleteSubject(subject);
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
@@ -259,7 +260,7 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
               }),
               ElevatedButton(
                 onPressed: () {
-                  _navigateToAddSubjectScreen(context);
+                  _navigateToAddSubjectScreen();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
@@ -283,7 +284,7 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
     );
   }
 
-  void _navigateToAddSubjectScreen(BuildContext context) async {
+  void _navigateToAddSubjectScreen() async {
     final newSubject = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => AddSubjectPage()),
@@ -301,7 +302,7 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
           _saveSubjects();
         }
       } else {
-        if (context.mounted) {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Subject "$newSubject" already exists.')),
           );
@@ -310,11 +311,10 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
     }
   }
 
-  void _navigateToSubjectTopicScreen(
-      BuildContext context, String subject) async {
+  void _navigateToSubjectTopicScreen(String subject) async {
     await fetchTopicsForSubject(subject);
     final topics = subjectTopics[subject] ?? [];
-    if (context.mounted) {
+    if (mounted) {
       Navigator.push(
           context,
           MaterialPageRoute(
@@ -323,7 +323,7 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
     }
   }
 
-  void _confirmDeleteSubject(BuildContext context, String subject) {
+  void _confirmDeleteSubject(String subject) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -340,8 +340,8 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
             TextButton(
               child: const Text('Delete'),
               onPressed: () async {
-                await _removeSubject(subject);
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // Close the dialog immediately
+                await _removeSubject(subject); // Remove the subject
               },
             ),
           ],

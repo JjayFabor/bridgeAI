@@ -35,6 +35,7 @@ class _SubjectTopicsPageState extends State<SubjectTopicsPage> {
                     builder: (context) => TopicLessonPage(
                       topic: topic,
                       lessonCache: _lessonCache,
+                      subject: widget.subject,
                     ),
                   ),
                 );

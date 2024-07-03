@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
@@ -14,11 +16,13 @@ import 'quizzes_page.dart';
 class TopicLessonPage extends StatefulWidget {
   final String topic;
   final Map<String, Map<String, dynamic>> lessonCache;
+  final String subject;
 
   const TopicLessonPage({
     super.key,
     required this.topic,
     required this.lessonCache,
+    required this.subject,
   });
 
   @override
@@ -35,6 +39,8 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
   PageController pageController = PageController();
   late Map<String, dynamic> currentLesson;
   final Logger logger = Logger();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void initState() {
@@ -50,56 +56,101 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
       return cachedLesson;
     }
 
-    final response = await http.get(Uri.parse(
-        'http://10.0.2.2:5000/generate-topics-lesson?topic=${widget.topic}'));
+    try {
+      final response = await http.get(Uri.parse(
+          'http://10.0.2.2:5000/generate-topics-lesson?topic=${widget.topic}'));
 
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> jsonResponse = json.decode(response.body);
-      if (jsonResponse.isNotEmpty) {
-        await userProvider.setLessonInCache(widget.topic, jsonResponse);
-        return jsonResponse;
-      } else {
-        final defaultResponse = {
-          "module": {
-            "title": "Default Module",
-            "lessons": [
-              {
-                "title": "Default Lesson",
-                "content": "No content available",
-                "examples": [
-                  {
-                    "title": "Default Example",
-                    "content": "No examples available",
-                    "explanation": "No explanation available"
-                  }
-                ],
-                "summary": "No summary available",
-                "practice_questions": [
-                  {"question": "Default Question", "answer": "No answer"}
-                ],
-                "key_terms": {"Default Term": "No definition available"}
-              }
-            ]
-          },
-          "quizzes": [
-            {
-              "lesson_title": "Default Lesson",
-              "questions": [
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+        if (jsonResponse.isNotEmpty) {
+          await userProvider.setLessonInCache(widget.topic, jsonResponse);
+          await _saveLessonToFirestore(widget.topic, jsonResponse);
+          return jsonResponse;
+        } else {
+          final defaultResponse = {
+            "module": {
+              "title": "Default Module",
+              "lessons": [
                 {
-                  "question": "Default Question",
-                  "choices": ["Option 1", "Option 2", "Option 3", "Option 4"],
-                  "answer": "Correct Answer",
-                  "explanation": "Explanation for the correct answer"
+                  "title": "Default Lesson",
+                  "content": "No content available",
+                  "examples": [
+                    {
+                      "title": "Default Example",
+                      "content": "No examples available",
+                      "explanation": "No explanation available"
+                    }
+                  ],
+                  "summary": "No summary available",
+                  "practice_questions": [
+                    {"question": "Default Question", "answer": "No answer"}
+                  ],
+                  "key_terms": {"Default Term": "No definition available"}
                 }
               ]
-            }
-          ]
-        };
-        await userProvider.setLessonInCache(widget.topic, defaultResponse);
-        return defaultResponse;
+            },
+            "quizzes": [
+              {
+                "lesson_title": "Default Lesson",
+                "questions": [
+                  {
+                    "question": "Default Question",
+                    "choices": ["Option 1", "Option 2", "Option 3", "Option 4"],
+                    "answer": "Correct Answer",
+                    "explanation": "Explanation for the correct answer"
+                  }
+                ]
+              }
+            ]
+          };
+          await userProvider.setLessonInCache(widget.topic, defaultResponse);
+          await _saveLessonToFirestore(widget.topic, defaultResponse);
+          return defaultResponse;
+        }
+      } else {
+        logger.e('Failed to load topic details: ${response.statusCode}');
+        throw Exception('Failed to load topic details');
       }
-    } else {
+    } catch (e) {
+      logger.e('Exception: $e');
       throw Exception('Failed to load topic details');
+    }
+  }
+
+  Future<void> _saveLessonToFirestore(
+      String topic, Map<String, dynamic> lessonData) async {
+    final User? user = _auth.currentUser;
+
+    if (user != null) {
+      DocumentReference topicRef = _firestore
+          .collection('profiles')
+          .doc(user.uid)
+          .collection('subjects')
+          .doc(widget.subject) // Use the subject passed from SubjectTopicsPage
+          .collection('topics')
+          .doc(topic);
+
+      // Save lesson data
+      for (var lesson in lessonData['module']['lessons']) {
+        await topicRef.collection('lessons').doc(lesson['title']).set({
+          'content': lesson['content'],
+          'examples': lesson['examples'],
+          'summary': lesson['summary'],
+          'practice_questions': lesson['practice_questions'],
+          'key_terms': lesson['key_terms'],
+          'quizzes': lesson['quizzes'],
+        });
+      }
+
+      // // Save quizzes data
+      // if (lessonData.containsKey('quizzes')) {
+      //   for (var quiz in lessonData['quizzes']) {
+      //     await topicRef
+      //         .collection('quizzes')
+      //         .doc(quiz['lesson_title'])
+      //         .set({'questions': quiz['questions']});
+      //   }
+      // }
     }
   }
 
