@@ -140,7 +140,7 @@ def generate_course_and_quiz(topic):
                         {{"question": "Question 8", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
                         {{"question": "Question 9", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
                         {{"question": "Question 10", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}}
-                ]
+                ],
                 }},
                 {{
                     "title": "Title of Lesson 2",
@@ -179,7 +179,7 @@ def generate_course_and_quiz(topic):
                         {{"question": "Question 8", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
                         {{"question": "Question 9", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
                         {{"question": "Question 10", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}}
-                ]
+                ],
                 }},
             ]
         }},

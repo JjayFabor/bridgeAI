@@ -341,6 +341,7 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
               child: const Text('Delete'),
               onPressed: () async {
                 Navigator.of(context).pop(); // Close the dialog immediately
+                await _clearCachedSubjects();
                 await _removeSubject(subject); // Remove the subject
               },
             ),

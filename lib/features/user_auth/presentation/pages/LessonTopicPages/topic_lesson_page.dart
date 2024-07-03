@@ -126,7 +126,7 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
           .collection('profiles')
           .doc(user.uid)
           .collection('subjects')
-          .doc(widget.subject) // Use the subject passed from SubjectTopicsPage
+          .doc(widget.subject)
           .collection('topics')
           .doc(topic);
 
@@ -141,16 +141,6 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
           'quizzes': lesson['quizzes'],
         });
       }
-
-      // // Save quizzes data
-      // if (lessonData.containsKey('quizzes')) {
-      //   for (var quiz in lessonData['quizzes']) {
-      //     await topicRef
-      //         .collection('quizzes')
-      //         .doc(quiz['lesson_title'])
-      //         .set({'questions': quiz['questions']});
-      //   }
-      // }
     }
   }
 
