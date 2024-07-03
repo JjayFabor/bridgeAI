@@ -11,7 +11,7 @@ BridgeAI aims to bridge the educational equity gap by providing students from un
 - [Contact](#contact)
 
 ## Overview
-BridgeAI is an educational platform designed to provide students from underserved communities with the resources and personalized learning tools they need to excel academically. Our mission is to empower these students by leveraging advanced AI technologies to create customized learning experiences tailored to their unique needs.
+BridgeAI is an educational platform designed to provide students from underserved communities with the resources and personalized learning tools they need to excel academically. My mission is to empower these students by leveraging advanced AI technologies to create customized learning experiences tailored to their unique needs.
 
 ## Features
 - **Personalized Learning Paths:** Customizable study plans based on individual student needs.
@@ -74,7 +74,7 @@ Once both the backend and frontend are running, you can access the BridgeAI plat
 - **Profile:** Manage user information and track individual progress.
 
 ## Contributing
-We welcome contributions from the community to help improve BridgeAI. To contribute:
+I welcome contributions from the community to help improve BridgeAI. To contribute:
 
 1. Fork the repository.
 2. Create a new branch (`git checkout -b feature-branch`).
@@ -82,11 +82,11 @@ We welcome contributions from the community to help improve BridgeAI. To contrib
 4. Push to the branch (`git push origin feature-branch`).
 5. Open a Pull Request.
 
-Please ensure your code adheres to our coding standards and includes appropriate tests.
+Please ensure your code adheres to my coding standards and includes appropriate tests.
 
 ## Contact
 For questions, feedback, or contributions, please reach out to us at [faborjaylordvhan@gmail.com](mailto:faborjaylordvhan@gmail.com).
 
 ---
 
-Thank you for being a part of the BridgeAI community and helping us bridge the educational equity gap!
+Thank you for being a part of the BridgeAI community and helping me bridge the educational equity gap!
