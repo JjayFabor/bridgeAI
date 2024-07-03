@@ -85,7 +85,7 @@ I welcome contributions from the community to help improve BridgeAI. To contribu
 Please ensure your code adheres to my coding standards and includes appropriate tests.
 
 ## Contact
-For questions, feedback, or contributions, please reach out to us at [faborjaylordvhan@gmail.com](mailto:faborjaylordvhan@gmail.com).
+For questions, feedback, or contributions, please reach out to me at [faborjaylordvhan@gmail.com](mailto:faborjaylordvhan@gmail.com).
 
 ---
 
