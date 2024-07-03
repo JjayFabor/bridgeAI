@@ -60,6 +60,7 @@ class _QuizzesPageState extends State<QuizzesPage> {
     setState(() {
       _selectedAnswers = List<int?>.filled(widget.quizzes.length, null);
       _isSubmitted = false;
+      _correctAnswers = 0;
     });
     await _prefs?.remove('isSubmitted');
     await _prefs?.remove('correctAnswers');
@@ -84,14 +85,16 @@ class _QuizzesPageState extends State<QuizzesPage> {
                       final quiz = widget.quizzes[index];
                       return Card(
                         child: ListTile(
-                          title: Text(quiz['question'] ?? 'No question provided'),
+                          title:
+                              Text(quiz['question'] ?? 'No question provided'),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              ...List.generate(quiz['choices']?.length ?? 0, (i) {
+                              ...List.generate(quiz['choices']?.length ?? 0,
+                                  (i) {
                                 return RadioListTile<int>(
-                                  title: Text(
-                                      quiz['choices'][i] ?? 'No choice provided'),
+                                  title: Text(quiz['choices'][i] ??
+                                      'No choice provided'),
                                   value: i,
                                   groupValue: _selectedAnswers[index],
                                   onChanged: (int? value) {
@@ -114,16 +117,14 @@ class _QuizzesPageState extends State<QuizzesPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          'You got $_correctAnswers out of ${widget.quizzes.length} correct.',
-                          style: const TextStyle(fontSize: 18),
-                        ),
                         if (_correctAnswers / widget.quizzes.length >= 0.75)
                           Column(
                             children: [
-                              const Text(
-                                  'Congratulations! You can proceed to the next lesson.',
-                                  style: TextStyle(color: Colors.green, fontSize: 16)),
+                              Text(
+                                  '''You got $_correctAnswers out of ${widget.quizzes.length} correct.
+                                  Congratulations! You can proceed to the next lesson.''',
+                                  style: const TextStyle(
+                                      color: Colors.green, fontSize: 16)),
                               const SizedBox(height: 20),
                               SizedBox(
                                 height: 600,
@@ -131,9 +132,11 @@ class _QuizzesPageState extends State<QuizzesPage> {
                                   itemCount: widget.quizzes.length,
                                   itemBuilder: (context, index) {
                                     final quiz = widget.quizzes[index];
-                                    final isCorrect = _selectedAnswers[index] != null &&
-                                        quiz['choices'][_selectedAnswers[index]] ==
-                                            quiz['answer'];
+                                    final isCorrect =
+                                        _selectedAnswers[index] != null &&
+                                            quiz['choices']
+                                                    [_selectedAnswers[index]] ==
+                                                quiz['answer'];
                                     return Card(
                                       child: ListTile(
                                         title: Text(quiz['question'] ??
@@ -163,7 +166,8 @@ class _QuizzesPageState extends State<QuizzesPage> {
                               ),
                               ElevatedButton(
                                 onPressed: widget.onNext,
-                                child: Text(widget.isLastPage ? 'Finish' : 'Next'),
+                                child:
+                                    Text(widget.isLastPage ? 'Finish' : 'Next'),
                               ),
                             ],
                           )
@@ -172,7 +176,8 @@ class _QuizzesPageState extends State<QuizzesPage> {
                             children: [
                               const Text(
                                   'You need to score at least 75% to proceed to the next lesson.',
-                                  style: TextStyle(color: Colors.red, fontSize: 16)),
+                                  style: TextStyle(
+                                      color: Colors.red, fontSize: 16)),
                               ElevatedButton(
                                 onPressed: _retakeQuiz,
                                 child: const Text('Retake Quiz'),
