@@ -13,8 +13,6 @@ class SubjectTopicsPage extends StatefulWidget {
 }
 
 class _SubjectTopicsPageState extends State<SubjectTopicsPage> {
-  final Map<String, Map<String, dynamic>> _lessonCache = {};
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,7 +32,6 @@ class _SubjectTopicsPageState extends State<SubjectTopicsPage> {
                   MaterialPageRoute(
                     builder: (context) => TopicLessonPage(
                       topic: topic,
-                      lessonCache: _lessonCache,
                       subject: widget.subject,
                     ),
                   ),

@@ -3,10 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-import 'package:provider/provider.dart';
+
 import 'package:http/http.dart' as http;
 
-import '../../../../../global/provider_implementation/user_provider.dart';
 import 'explanation_page.dart';
 import 'examples_page.dart';
 import 'practice_questions_page.dart';
@@ -15,13 +14,11 @@ import 'quizzes_page.dart';
 
 class TopicLessonPage extends StatefulWidget {
   final String topic;
-  final Map<String, Map<String, dynamic>> lessonCache;
   final String subject;
 
   const TopicLessonPage({
     super.key,
     required this.topic,
-    required this.lessonCache,
     required this.subject,
   });
 
@@ -49,13 +46,43 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
   }
 
   Future<Map<String, dynamic>> fetchTopicLesson() async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final User? user = _auth.currentUser;
+    if (user != null) {
+      DocumentReference topicRef = _firestore
+          .collection('profiles')
+          .doc(user.uid)
+          .collection('subjects')
+          .doc(widget.subject)
+          .collection('topics')
+          .doc(widget.topic);
 
-    final cachedLesson = userProvider.getLessonFromCache(widget.topic);
-    if (cachedLesson != null) {
-      return cachedLesson;
+      final lessonsSnapshot = await topicRef.collection('lessons').get();
+
+      if (lessonsSnapshot.docs.isNotEmpty) {
+        // Lessons are found in Firestore
+        Map<String, dynamic> lessonsData = {
+          "module": {
+            "lessons": lessonsSnapshot.docs.map((doc) {
+              return {
+                "title": doc.id,
+                "content": doc["content"],
+                "examples": doc["examples"],
+                "summary": doc["summary"],
+                "practice_questions": doc["practice_questions"],
+                "key_terms": doc["key_terms"],
+                "quizzes": doc["quizzes"],
+              };
+            }).toList()
+          }
+        };
+        return lessonsData;
+      }
     }
+    // If no lessons found in Firestore, generate them via HTTP request
+    return _generateAndSaveTopicLesson();
+  }
 
+  Future<Map<String, dynamic>> _generateAndSaveTopicLesson() async {
     try {
       final response = await http.get(Uri.parse(
           'http://10.0.2.2:5000/generate-topics-lesson?topic=${widget.topic}'));
@@ -63,7 +90,6 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = json.decode(response.body);
         if (jsonResponse.isNotEmpty) {
-          await userProvider.setLessonInCache(widget.topic, jsonResponse);
           await _saveLessonToFirestore(widget.topic, jsonResponse);
           return jsonResponse;
         } else {
@@ -103,7 +129,6 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
               }
             ]
           };
-          await userProvider.setLessonInCache(widget.topic, defaultResponse);
           await _saveLessonToFirestore(widget.topic, defaultResponse);
           return defaultResponse;
         }
@@ -196,9 +221,6 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
                 data['module']['lessons'] ?? []);
             currentLesson = lessons[currentLessonIndex];
             totalLessons = lessons.length;
-
-            // Debugging output
-            logger.i("Quizzes data: ${currentLesson['quizzes']}");
 
             return Column(
               children: [

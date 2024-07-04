@@ -17,9 +17,6 @@ void main() {
     // Create an instance of UserProvider
     final userProvider = UserProvider();
 
-    // Load the lesson cache
-    await userProvider.loadLessonCache();
-
     // Build our app and trigger a frame.
     await tester.pumpWidget(
       ChangeNotifierProvider<UserProvider>.value(

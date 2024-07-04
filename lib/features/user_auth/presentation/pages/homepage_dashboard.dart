@@ -57,12 +57,33 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
 
   Future<void> _removeSubject(String subject) async {
     if (_user != null) {
-      // Simply remove subject and its topics from local storage
+      // Remove subject and its topics from local storage
       setState(() {
         subjects.remove(subject);
         subjectTopics.remove(subject);
       });
       await _saveSubjects();
+      await _removeSubjectFromFirestore(subject);
+    }
+  }
+
+  Future<void> _removeSubjectFromFirestore(String subject) async {
+    if (_user != null) {
+      DocumentReference userRef =
+          _firestore.collection('profiles').doc(_user!.uid);
+      DocumentReference subjectRef =
+          userRef.collection('subjects').doc(subject);
+
+      final topicSnapshots = await subjectRef.collection('topics').get();
+      for (var topicDoc in topicSnapshots.docs) {
+        final lessonSnapshots =
+            await topicDoc.reference.collection('lessons').get();
+        for (var lessonDoc in lessonSnapshots.docs) {
+          await lessonDoc.reference.delete();
+        }
+        await topicDoc.reference.delete();
+      }
+      await subjectRef.delete();
     }
   }
 
@@ -341,8 +362,8 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
               child: const Text('Delete'),
               onPressed: () async {
                 Navigator.of(context).pop(); // Close the dialog immediately
-                await _clearCachedSubjects();
-                await _removeSubject(subject); // Remove the subject
+                await _removeSubject(
+                    subject); // Remove the subject and all associated data
               },
             ),
           ],

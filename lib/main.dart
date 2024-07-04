@@ -13,7 +13,6 @@ void main() async {
   );
 
   final userProvider = UserProvider();
-  await userProvider.loadLessonCache();
 
   runApp( MultiProvider(
       providers: [
