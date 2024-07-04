@@ -58,7 +58,7 @@ combined_model = genai.GenerativeModel(
             and solutions."""
     )
 
-def reRun_model_if_needed(model, prompt, attempts=3):
+def reRun_model_if_needed(model, prompt, attempts=5):
     for attempt in range(attempts):
         try:
             response = model.start_chat(history=[]).send_message(prompt)
