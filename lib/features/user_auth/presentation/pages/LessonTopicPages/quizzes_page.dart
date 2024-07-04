@@ -35,8 +35,8 @@ class _QuizzesPageState extends State<QuizzesPage> {
     _prefs = await SharedPreferences.getInstance();
     setState(() {
       _selectedAnswers = List<int?>.filled(widget.quizzes.length, null);
-      _isSubmitted = _prefs?.getBool('isSubmitted') ?? false;
-      _correctAnswers = _prefs?.getInt('correctAnswers') ?? 0;
+      _isSubmitted = false;
+      _correctAnswers = 0;
     });
   }
 
@@ -117,13 +117,16 @@ class _QuizzesPageState extends State<QuizzesPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        Text(
+                          'You got $_correctAnswers out of ${widget.quizzes.length} correct.',
+                          style: const TextStyle(fontSize: 18),
+                        ),
                         if (_correctAnswers / widget.quizzes.length >= 0.75)
                           Column(
                             children: [
-                              Text(
-                                  '''You got $_correctAnswers out of ${widget.quizzes.length} correct.
-                                  Congratulations! You can proceed to the next lesson.''',
-                                  style: const TextStyle(
+                              const Text(
+                                  'Congratulations! You can proceed to the next lesson.',
+                                  style: TextStyle(
                                       color: Colors.green, fontSize: 16)),
                               const SizedBox(height: 20),
                               SizedBox(
