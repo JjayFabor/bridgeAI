@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 import 'dart:io';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../global/provider_implementation/user_provider.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -58,35 +59,29 @@ class _ProfilePageState extends State<ProfilePage> {
                 .setProfileData(profileData);
 
             setState(() {
-              _nameController.text = profileData['name'];
-              _ageController.text = profileData['age'].toString();
-              _gradeController.text = profileData['grade'].toString();
-              _countryController.text = profileData['country'];
-              _usernameController.text = profileData['username'];
-              _emailController.text = profileData['email'];
-              _passwordController.text = profileData['password'];
+              _nameController.text = profileData['name'] ?? '';
+              _ageController.text = profileData['age']?.toString() ?? '';
+              _gradeController.text = profileData['grade']?.toString() ?? '';
+              _countryController.text = profileData['country'] ?? '';
+              _usernameController.text = profileData['username'] ?? '';
+              _emailController.text = _user!.email ?? '';
             });
 
-            logger.i("Profile data set in UserProvider: $profileData");
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            await prefs.setString('username', profileData['username']);
           }
         } else {
-          logger.w("User profile does not exist for UID: ${_user!.uid}");
-          if (mounted) {
-            setState(() {
-              _errorMessage = 'Profile not found';
-            });
-          }
+          logger.e("Profile not found for UID: ${_user!.uid}");
+          setState(() {
+            _errorMessage = "Profile not found.";
+          });
         }
       } catch (e) {
-        logger.e("Error fetching user profile: $e");
+        logger.e("Error fetching profile: $e");
         setState(() {
-          _errorMessage = 'An error occurred while fetching the profile: $e';
+          _errorMessage = "Error fetching profile: $e";
         });
       }
-    } else {
-      setState(() {
-        _errorMessage = 'User not logged in';
-      });
     }
   }
 

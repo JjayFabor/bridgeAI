@@ -90,13 +90,13 @@ def generate_course_and_quiz(topic):
     
     Create a self-study course module on the topic "{topic}" with three detailed lessons. 
     Each lesson should include:
-    - A detailed explanation or content (explain to a 10 year old child) that is not less than 5 sentences.
+    - A detailed explanation or content (explain to a 10-year-old child) that is not less than 5 sentences.
     - Four real-world examples
     - A summary (make it a paragraph form that a child can understand)
     - Ten practice questions
     - Key terms and definitions
 
-    After creating the course module, create quizzes with multiple choice questions and solutions for each lesson. Ensure the quizzes reinforce the concepts and test the student's understanding. Each lesson should have at least 10 questions.
+    After creating the course module, create quizzes with multiple choice questions and solutions for each lesson, including the same Lesson Title. Ensure the quizzes reinforce the concepts and test the student's understanding. Each lesson should have at least 10 questions.
 
     The output should be in the following JSON format:
     {{
@@ -140,7 +140,7 @@ def generate_course_and_quiz(topic):
                         {{"question": "Question 8", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
                         {{"question": "Question 9", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
                         {{"question": "Question 10", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}}
-                ],
+                    ]
                 }},
                 {{
                     "title": "Title of Lesson 2",
@@ -179,11 +179,49 @@ def generate_course_and_quiz(topic):
                         {{"question": "Question 8", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
                         {{"question": "Question 9", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
                         {{"question": "Question 10", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}}
-                ],
+                    ]
                 }},
+                {{
+                    "title": "Title of Lesson 3",
+                    "content": "detailed explanation here",
+                    "examples": [
+                        {{"title": "Title of Example 1", "content": "example1", "explanation": "example1 description"}},
+                        {{"title": "Title of Example 2", "content": "example2", "explanation": "example2 description"}},
+                        {{"title": "Title of Example 3", "content": "example3", "explanation": "example3 description"}},
+                        {{"title": "Title of Example 4", "content": "example4", "explanation": "example4 description"}}
+                    ],
+                    "summary": "summary of the lesson",
+                    "practice_questions": [
+                        {{"question": "Question 1", "answer": "answer1"}},
+                        {{"question": "Question 2", "answer": "answer2"}},
+                        {{"question": "Question 3", "answer": "answer3"}},
+                        {{"question": "Question 4", "answer": "answer4"}},
+                        {{"question": "Question 5", "answer": "answer5"}},
+                        {{"question": "Question 6", "answer": "answer6"}},
+                        {{"question": "Question 7", "answer": "answer7"}},
+                        {{"question": "Question 8", "answer": "answer8"}},
+                        {{"question": "Question 9", "answer": "answer9"}},
+                        {{"question": "Question 10", "answer": "answer10"}}
+                    ],
+                    "key_terms": {{
+                        "term1": "definition1",
+                        "term2": "definition2"
+                    }},
+                    "quizzes": [
+                        {{"question": "Question 1", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 2", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 3", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 4", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 5", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 6", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 7", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 8", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 9", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}},
+                        {{"question": "Question 10", "choices": ["Option 1", "Option 2", "Option 3", "Option 4"], "answer": "Correct Answer", "explanation": "Explanation for the correct answer"}}
+                    ]
+                }}
             ]
-        }},
-        ]
+        }}
     }}
     """
 

@@ -1,6 +1,7 @@
 import 'package:bridgeai/features/user_auth/presentation/pages/homepage_dashboard.dart';
 import 'package:bridgeai/features/user_auth/presentation/pages/login_screen.dart';
 import 'package:bridgeai/features/user_auth/presentation/pages/profile_page.dart';
+import 'package:bridgeai/features/user_auth/presentation/pages/progress_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -59,7 +60,7 @@ class _HomePageState extends State<HomePage> {
                   color: Colors.blueAccent,
                 ),
                 accountName: Text(
-                  profileData?['name'] ?? 'User Name',
+                  profileData?['username'] ?? 'User Name',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -98,8 +99,7 @@ class _HomePageState extends State<HomePage> {
               ),
               ListTile(
                 leading: const Icon(Icons.search, color: Colors.white),
-                title:
-                    const Text('Search', style: TextStyle(color: Colors.white)),
+                title: const Text('Search', style: TextStyle(color: Colors.white)),
                 onTap: () {
                   setState(() {
                     _page = 1;
@@ -109,8 +109,7 @@ class _HomePageState extends State<HomePage> {
               ),
               ListTile(
                 leading: const Icon(Icons.person, color: Colors.white),
-                title: const Text('Profile',
-                    style: TextStyle(color: Colors.white)),
+                title: const Text('Profile', style: TextStyle(color: Colors.white)),
                 onTap: () {
                   setState(() {
                     _page = 2;
@@ -118,19 +117,29 @@ class _HomePageState extends State<HomePage> {
                   Navigator.pop(context);
                 },
               ),
+              ListTile(
+                leading: const Icon(Icons.assessment, color: Colors.white),
+                title: const Text('Progress', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProgressPage(username: profileData?['username']),
+                    ),
+                  );
+                },
+              ),
               const Spacer(),
               ListTile(
                 leading: const Icon(Icons.settings, color: Colors.white),
-                title: const Text('Settings',
-                    style: TextStyle(color: Colors.white)),
+                title: const Text('Settings', style: TextStyle(color: Colors.white)),
                 onTap: () {
-                  // Navigate to settings page
+                  // Add the desired functionality here
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.logout, color: Colors.white),
-                title:
-                    const Text('Logout', style: TextStyle(color: Colors.white)),
+                title: const Text('Logout', style: TextStyle(color: Colors.white)),
                 onTap: _logout,
               ),
             ],

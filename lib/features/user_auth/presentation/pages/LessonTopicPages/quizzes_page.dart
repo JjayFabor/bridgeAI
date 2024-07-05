@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class QuizzesPage extends StatefulWidget {
+  final String lessonTitle;
   final List<Map<String, dynamic>> quizzes;
   final VoidCallback onNext;
   final VoidCallback? onPrev;
@@ -9,6 +10,7 @@ class QuizzesPage extends StatefulWidget {
 
   const QuizzesPage({
     super.key,
+    required this.lessonTitle,
     required this.quizzes,
     required this.onNext,
     this.onPrev,
@@ -24,6 +26,7 @@ class _QuizzesPageState extends State<QuizzesPage> {
   bool _isSubmitted = false;
   int _correctAnswers = 0;
   SharedPreferences? _prefs;
+  String? _username;
 
   @override
   void initState() {
@@ -33,18 +36,49 @@ class _QuizzesPageState extends State<QuizzesPage> {
 
   Future<void> _initializeQuiz() async {
     _prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _selectedAnswers = List<int?>.filled(widget.quizzes.length, null);
-      _isSubmitted = false;
-      _correctAnswers = 0;
-    });
+    _username = _prefs?.getString('username');
+
+    _selectedAnswers = List<int?>.filled(widget.quizzes.length, null);
+    _isSubmitted = false;
+    _correctAnswers = 0;
+
+    // Load saved state
+    _loadQuizState();
+  }
+
+  void _loadQuizState() async {
+    final savedAnswers =
+        _prefs?.getStringList('$_username-${widget.lessonTitle}-answers');
+    final savedIsSubmitted =
+        _prefs?.getBool('$_username-${widget.lessonTitle}-isSubmitted');
+    final savedCorrectAnswers =
+        _prefs?.getInt('$_username-${widget.lessonTitle}-correctAnswers');
+
+    if (savedAnswers != null) {
+      setState(() {
+        _selectedAnswers =
+            savedAnswers.map((e) => e.isEmpty ? null : int.parse(e)).toList();
+      });
+    }
+
+    if (savedIsSubmitted != null) {
+      setState(() {
+        _isSubmitted = savedIsSubmitted;
+      });
+    }
+
+    if (savedCorrectAnswers != null) {
+      setState(() {
+        _correctAnswers = savedCorrectAnswers;
+      });
+    }
   }
 
   void _submitQuiz() async {
     int correctAnswers = 0;
     for (int i = 0; i < widget.quizzes.length; i++) {
       if (_selectedAnswers[i] != null &&
-          widget.quizzes[i]['choices'][_selectedAnswers[i]] ==
+          widget.quizzes[i]['choices'][_selectedAnswers[i]!] ==
               widget.quizzes[i]['answer']) {
         correctAnswers++;
       }
@@ -54,6 +88,26 @@ class _QuizzesPageState extends State<QuizzesPage> {
       _isSubmitted = true;
     });
     await _saveQuizState();
+
+    // Save the score for the current lesson
+    if (_username != null) {
+      await _saveLessonScore(widget.lessonTitle, _username!, correctAnswers);
+    }
+  }
+
+  Future<void> _saveLessonScore(
+      String lessonTitle, String username, int score) async {
+    await _prefs?.setInt('$username-$lessonTitle-score', score);
+    await _prefs?.setString(
+        '$username-$lessonTitle-timestamp', DateTime.now().toString());
+
+    // Save the lesson title
+    List<String>? lessonTitles =
+        _prefs?.getStringList('$username-lessonTitles') ?? [];
+    if (!lessonTitles.contains(lessonTitle)) {
+      lessonTitles.add(lessonTitle);
+      await _prefs?.setStringList('$username-lessonTitles', lessonTitles);
+    }
   }
 
   Future<void> _retakeQuiz() async {
@@ -62,13 +116,18 @@ class _QuizzesPageState extends State<QuizzesPage> {
       _isSubmitted = false;
       _correctAnswers = 0;
     });
-    await _prefs?.remove('isSubmitted');
-    await _prefs?.remove('correctAnswers');
+    await _prefs?.remove('$_username-${widget.lessonTitle}-answers');
+    await _prefs?.remove('$_username-${widget.lessonTitle}-isSubmitted');
+    await _prefs?.remove('$_username-${widget.lessonTitle}-correctAnswers');
   }
 
   Future<void> _saveQuizState() async {
-    await _prefs?.setBool('isSubmitted', _isSubmitted);
-    await _prefs?.setInt('correctAnswers', _correctAnswers);
+    await _prefs?.setStringList('$_username-${widget.lessonTitle}-answers',
+        _selectedAnswers.map((e) => e?.toString() ?? '').toList());
+    await _prefs?.setBool(
+        '$_username-${widget.lessonTitle}-isSubmitted', _isSubmitted);
+    await _prefs?.setInt(
+        '$_username-${widget.lessonTitle}-correctAnswers', _correctAnswers);
   }
 
   @override
@@ -135,11 +194,11 @@ class _QuizzesPageState extends State<QuizzesPage> {
                                   itemCount: widget.quizzes.length,
                                   itemBuilder: (context, index) {
                                     final quiz = widget.quizzes[index];
-                                    final isCorrect =
-                                        _selectedAnswers[index] != null &&
-                                            quiz['choices']
-                                                    [_selectedAnswers[index]] ==
-                                                quiz['answer'];
+                                    final isCorrect = _selectedAnswers[index] !=
+                                            null &&
+                                        quiz['choices']
+                                                [_selectedAnswers[index]!] ==
+                                            quiz['answer'];
                                     return Card(
                                       child: ListTile(
                                         title: Text(quiz['question'] ??
@@ -149,7 +208,7 @@ class _QuizzesPageState extends State<QuizzesPage> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              'Your answer: ${_selectedAnswers[index] != null ? quiz['choices'][_selectedAnswers[index]] : 'No answer provided'}',
+                                              'Your answer: ${_selectedAnswers[index] != null ? quiz['choices'][_selectedAnswers[index]!] : 'No answer provided'}',
                                               style: TextStyle(
                                                   color: isCorrect
                                                       ? Colors.green

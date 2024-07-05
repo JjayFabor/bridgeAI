@@ -66,11 +66,19 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
               return {
                 "title": doc.id,
                 "content": doc["content"],
-                "examples": doc["examples"],
+                "examples": List<Map<String, dynamic>>.from(doc["examples"]),
                 "summary": doc["summary"],
-                "practice_questions": doc["practice_questions"],
-                "key_terms": doc["key_terms"],
-                "quizzes": doc["quizzes"],
+                "practice_questions":
+                    List<Map<String, dynamic>>.from(doc["practice_questions"]),
+                "key_terms": Map<String, String>.from(doc["key_terms"]),
+                "quizzes":
+                    List<Map<String, dynamic>>.from(doc["quizzes"]).map((quiz) {
+                  return {
+                    "lessonTitle":
+                        doc.id, // Ensure lesson title is added to each quiz
+                    ...quiz
+                  };
+                }).toList(),
               };
             }).toList()
           }
@@ -117,7 +125,7 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
             },
             "quizzes": [
               {
-                "lesson_title": "Default Lesson",
+                // "title": "Default Lesson",
                 "questions": [
                   {
                     "question": "Default Question",
@@ -159,11 +167,12 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
       for (var lesson in lessonData['module']['lessons']) {
         await topicRef.collection('lessons').doc(lesson['title']).set({
           'content': lesson['content'],
-          'examples': lesson['examples'],
+          'examples': List<Map<String, dynamic>>.from(lesson['examples']),
           'summary': lesson['summary'],
-          'practice_questions': lesson['practice_questions'],
-          'key_terms': lesson['key_terms'],
-          'quizzes': lesson['quizzes'],
+          'practice_questions':
+              List<Map<String, dynamic>>.from(lesson['practice_questions']),
+          'key_terms': Map<String, String>.from(lesson['key_terms']),
+          'quizzes': List<Map<String, dynamic>>.from(lesson['quizzes']),
         });
       }
     }
@@ -217,8 +226,8 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (snapshot.hasData) {
             final data = snapshot.data!;
-            final lessons = List<Map<String, dynamic>>.from(
-                data['module']['lessons'] ?? []);
+            final lessons =
+                List<Map<String, dynamic>>.from(data['module']['lessons']);
             currentLesson = lessons[currentLessonIndex];
             totalLessons = lessons.length;
 
@@ -244,26 +253,27 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
                       ),
                       ExamplesPage(
                         examples: List<Map<String, dynamic>>.from(
-                            currentLesson['examples'] ?? []),
+                            currentLesson['examples']),
                         onNext: _onPageCompleted,
                         onPrev: _onPagePrevious,
                       ),
                       PracticeQuestionsPage(
                         questions: List<Map<String, dynamic>>.from(
-                            currentLesson['practice_questions'] ?? []),
+                            currentLesson['practice_questions']),
                         onNext: _onPageCompleted,
                         onPrev: _onPagePrevious,
                       ),
                       KeyTermsPage(
                         keyTerms: Map<String, String>.from(
-                            currentLesson['key_terms'] ?? {}),
+                            currentLesson['key_terms']),
                         onNext: _onPageCompleted,
                         onPrev: _onPagePrevious,
                         isLastPage: false,
                       ),
                       QuizzesPage(
+                        lessonTitle: currentLesson['title'] ?? 'No title',
                         quizzes: List<Map<String, dynamic>>.from(
-                            currentLesson['quizzes'] ?? []),
+                            currentLesson['quizzes']),
                         onNext: _onPageCompleted,
                         onPrev: _onPagePrevious,
                         isLastPage: currentLessonIndex == totalLessons - 1,
