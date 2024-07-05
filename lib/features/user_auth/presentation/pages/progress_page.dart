@@ -6,57 +6,90 @@ class ProgressPage extends StatelessWidget {
 
   const ProgressPage({super.key, required this.username});
 
-  Future<List<Map<String, dynamic>>> _getScores() async {
+  Future<Map<String, dynamic>> _getProgressData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<Map<String, dynamic>> scores = [];
+    Map<String, dynamic> progressData = {};
 
-    List<String>? lessonTitles =
-        prefs.getStringList('$username-lessonTitles') ?? [];
+    List<String>? subjects = prefs.getStringList('$username-subjects') ?? [];
 
-    for (String lessonTitle in lessonTitles) {
-      int? score = prefs.getInt('$username-$lessonTitle-score');
-      String? timestamp = prefs.getString('$username-$lessonTitle-timestamp');
+    for (String subject in subjects) {
+      List<String>? topics =
+          prefs.getStringList('$username-$subject-topics') ?? [];
+      Map<String, dynamic> topicsData = {};
 
-      if (score != null && timestamp != null) {
-        scores.add({
-          'lessonTitle': lessonTitle,
-          'score': score,
-          'timestamp': timestamp,
-        });
+      for (String topic in topics) {
+        List<String>? lessons =
+            prefs.getStringList('$username-$subject-$topic-lessons') ?? [];
+        List<Map<String, dynamic>> lessonsData = [];
+
+        for (String lesson in lessons) {
+          int? score = prefs.getInt('$username-$subject-$topic-$lesson-score');
+          String? timestamp =
+              prefs.getString('$username-$subject-$topic-$lesson-timestamp');
+
+          if (score != null && timestamp != null) {
+            lessonsData.add({
+              'lessonTitle': lesson,
+              'score': score,
+              'timestamp': timestamp,
+            });
+          }
+        }
+
+        topicsData[topic] = lessonsData;
       }
+
+      progressData[subject] = topicsData;
     }
 
-    return scores;
+    return progressData;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Your Progress')),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _getScores(),
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: _getProgressData(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final scores = snapshot.data!;
+          final progressData = snapshot.data!;
 
-          if (scores.isEmpty) {
-            return const Center(child: Text('No scores available.'));
+          if (progressData.isEmpty) {
+            return const Center(child: Text('No progress data available.'));
           }
 
           return ListView.builder(
-            itemCount: scores.length,
-            itemBuilder: (context, index) {
-              final score = scores[index];
-              final lessonTitle = score['lessonTitle'];
-              final scoreValue = score['score'];
-              final timestamp = score['timestamp'];
+            itemCount: progressData.keys.length,
+            itemBuilder: (context, subjectIndex) {
+              String subject = progressData.keys.elementAt(subjectIndex);
+              Map<String, dynamic> topicsData = progressData[subject];
 
-              return ListTile(
-                title: Text(lessonTitle),
-                subtitle: Text('Score: $scoreValue\nDate: $timestamp'),
+              return ExpansionTile(
+                title: Text(subject,
+                    style:
+                        const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                children: topicsData.keys.map<Widget>((String topic) {
+                  List<Map<String, dynamic>> lessonsData = topicsData[topic];
+
+                  return ExpansionTile(
+                    title: Text(topic, style: const TextStyle(fontSize: 16)),
+                    children: lessonsData
+                        .map<Widget>((Map<String, dynamic> lessonData) {
+                      final lessonTitle = lessonData['lessonTitle'];
+                      final score = lessonData['score'];
+                      final timestamp = lessonData['timestamp'];
+
+                      return ListTile(
+                        title: Text(lessonTitle),
+                        subtitle: Text('Score: $score\nDate: $timestamp'),
+                      );
+                    }).toList(),
+                  );
+                }).toList(),
               );
             },
           );

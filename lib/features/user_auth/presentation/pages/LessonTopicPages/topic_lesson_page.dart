@@ -271,6 +271,8 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
                         isLastPage: false,
                       ),
                       QuizzesPage(
+                        topic: widget.topic,
+                        subject: widget.subject,
                         lessonTitle: currentLesson['title'] ?? 'No title',
                         quizzes: List<Map<String, dynamic>>.from(
                             currentLesson['quizzes']),
