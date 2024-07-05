@@ -2,30 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProgressPage extends StatelessWidget {
-  final String username;
+  final String userId;
 
-  const ProgressPage({super.key, required this.username});
+  const ProgressPage({super.key, required this.userId});
 
   Future<Map<String, dynamic>> _getProgressData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     Map<String, dynamic> progressData = {};
 
-    List<String>? subjects = prefs.getStringList('$username-subjects') ?? [];
+    List<String>? subjects = prefs.getStringList('$userId-subjects') ?? [];
 
     for (String subject in subjects) {
       List<String>? topics =
-          prefs.getStringList('$username-$subject-topics') ?? [];
+          prefs.getStringList('$userId-$subject-topics') ?? [];
       Map<String, dynamic> topicsData = {};
 
       for (String topic in topics) {
         List<String>? lessons =
-            prefs.getStringList('$username-$subject-$topic-lessons') ?? [];
+            prefs.getStringList('$userId-$subject-$topic-lessons') ?? [];
         List<Map<String, dynamic>> lessonsData = [];
 
         for (String lesson in lessons) {
-          int? score = prefs.getInt('$username-$subject-$topic-$lesson-score');
+          int? score = prefs.getInt('$userId-$subject-$topic-$lesson-score');
           String? timestamp =
-              prefs.getString('$username-$subject-$topic-$lesson-timestamp');
+              prefs.getString('$userId-$subject-$topic-$lesson-timestamp');
 
           if (score != null && timestamp != null) {
             lessonsData.add({
@@ -70,8 +70,8 @@ class ProgressPage extends StatelessWidget {
 
               return ExpansionTile(
                 title: Text(subject,
-                    style:
-                        const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold)),
                 children: topicsData.keys.map<Widget>((String topic) {
                   List<Map<String, dynamic>> lessonsData = topicsData[topic];
 

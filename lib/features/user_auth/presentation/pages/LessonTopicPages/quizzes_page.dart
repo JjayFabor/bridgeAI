@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class QuizzesPage extends StatefulWidget {
@@ -26,21 +28,24 @@ class QuizzesPage extends StatefulWidget {
 }
 
 class _QuizzesPageState extends State<QuizzesPage> {
+  late User? _user;
   late List<int?> _selectedAnswers;
   bool _isSubmitted = false;
   int _correctAnswers = 0;
   SharedPreferences? _prefs;
-  String? _username;
+  late String _userId; // Declare _userId as a class-level variable
+  final Logger logger = Logger();
 
   @override
   void initState() {
     super.initState();
+    _user = FirebaseAuth.instance.currentUser;
+    _userId = _user!.uid; // Initialize _userId here
     _initializeQuiz();
   }
 
   Future<void> _initializeQuiz() async {
     _prefs = await SharedPreferences.getInstance();
-    _username = _prefs?.getString('username');
 
     _selectedAnswers = List<int?>.filled(widget.quizzes.length, null);
     _isSubmitted = false;
@@ -51,12 +56,12 @@ class _QuizzesPageState extends State<QuizzesPage> {
   }
 
   void _loadQuizState() async {
-    final savedAnswers =
-        _prefs?.getStringList('$_username-${widget.subject}-${widget.topic}-${widget.lessonTitle}-answers');
-    final savedIsSubmitted =
-        _prefs?.getBool('$_username-${widget.subject}-${widget.topic}-${widget.lessonTitle}-isSubmitted');
-    final savedCorrectAnswers =
-        _prefs?.getInt('$_username-${widget.subject}-${widget.topic}-${widget.lessonTitle}-correctAnswers');
+    final savedAnswers = _prefs?.getStringList(
+        '$_userId-${widget.subject}-${widget.topic}-${widget.lessonTitle}-answers');
+    final savedIsSubmitted = _prefs?.getBool(
+        '$_userId-${widget.subject}-${widget.topic}-${widget.lessonTitle}-isSubmitted');
+    final savedCorrectAnswers = _prefs?.getInt(
+        '$_userId-${widget.subject}-${widget.topic}-${widget.lessonTitle}-correctAnswers');
 
     if (savedAnswers != null) {
       setState(() {
@@ -79,6 +84,7 @@ class _QuizzesPageState extends State<QuizzesPage> {
   }
 
   void _submitQuiz() async {
+    logger.i("UserID: $_userId");
     int correctAnswers = 0;
     for (int i = 0; i < widget.quizzes.length; i++) {
       if (_selectedAnswers[i] != null &&
@@ -94,34 +100,41 @@ class _QuizzesPageState extends State<QuizzesPage> {
     await _saveQuizState();
 
     // Save the score for the current lesson
-    if (_username != null) {
-      await _saveLessonScore(widget.subject, widget.topic, widget.lessonTitle, _username!, correctAnswers);
+    if (_userId.isNotEmpty) {
+      await _saveLessonScore(widget.subject, widget.topic, widget.lessonTitle,
+          _userId, correctAnswers);
     }
   }
 
-  Future<void> _saveLessonScore(
-      String subject, String topic, String lessonTitle, String username, int score) async {
-    await _prefs?.setInt('$username-$subject-$topic-$lessonTitle-score', score);
-    await _prefs?.setString(
-        '$username-$subject-$topic-$lessonTitle-timestamp', DateTime.now().toString());
+  Future<void> _saveLessonScore(String subject, String topic,
+      String lessonTitle, String userId, int score) async {
+    await _prefs?.setInt('$userId-$subject-$topic-$lessonTitle-score', score);
+    await _prefs?.setString('$userId-$subject-$topic-$lessonTitle-timestamp',
+        DateTime.now().toString());
 
     // Save the lesson title
-    List<String>? subjects = _prefs?.getStringList('$username-subjects') ?? [];
+    List<String>? subjects = _prefs?.getStringList('$userId-subjects') ?? [];
     if (!subjects.contains(subject)) {
       subjects.add(subject);
-      await _prefs?.setStringList('$username-subjects', subjects);
+      await _prefs?.setStringList('$userId-subjects', subjects);
+      logger.i('Stored subject: $subject for user: $userId');
     }
 
-    List<String>? topics = _prefs?.getStringList('$username-$subject-topics') ?? [];
+    List<String>? topics =
+        _prefs?.getStringList('$userId-$subject-topics') ?? [];
     if (!topics.contains(topic)) {
       topics.add(topic);
-      await _prefs?.setStringList('$username-$subject-topics', topics);
+      await _prefs?.setStringList('$userId-$subject-topics', topics);
+      logger.i('Stored topic: $topic for user: $userId and subject: $subject');
     }
 
-    List<String>? lessons = _prefs?.getStringList('$username-$subject-$topic-lessons') ?? [];
+    List<String>? lessons =
+        _prefs?.getStringList('$userId-$subject-$topic-lessons') ?? [];
     if (!lessons.contains(lessonTitle)) {
       lessons.add(lessonTitle);
-      await _prefs?.setStringList('$username-$subject-$topic-lessons', lessons);
+      await _prefs?.setStringList('$userId-$subject-$topic-lessons', lessons);
+      logger.i(
+          'Stored lesson: $lessonTitle for user: $userId, subject: $subject, and topic: $topic');
     }
   }
 
@@ -131,18 +144,24 @@ class _QuizzesPageState extends State<QuizzesPage> {
       _isSubmitted = false;
       _correctAnswers = 0;
     });
-    await _prefs?.remove('$_username-${widget.subject}-${widget.topic}-${widget.lessonTitle}-answers');
-    await _prefs?.remove('$_username-${widget.subject}-${widget.topic}-${widget.lessonTitle}-isSubmitted');
-    await _prefs?.remove('$_username-${widget.subject}-${widget.topic}-${widget.lessonTitle}-correctAnswers');
+    await _prefs?.remove(
+        '$_userId-${widget.subject}-${widget.topic}-${widget.lessonTitle}-answers');
+    await _prefs?.remove(
+        '$_userId-${widget.subject}-${widget.topic}-${widget.lessonTitle}-isSubmitted');
+    await _prefs?.remove(
+        '$_userId-${widget.subject}-${widget.topic}-${widget.lessonTitle}-correctAnswers');
   }
 
   Future<void> _saveQuizState() async {
-    await _prefs?.setStringList('$_username-${widget.subject}-${widget.topic}-${widget.lessonTitle}-answers',
+    await _prefs?.setStringList(
+        '$_userId-${widget.subject}-${widget.topic}-${widget.lessonTitle}-answers',
         _selectedAnswers.map((e) => e?.toString() ?? '').toList());
     await _prefs?.setBool(
-        '$_username-${widget.subject}-${widget.topic}-${widget.lessonTitle}-isSubmitted', _isSubmitted);
+        '$_userId-${widget.subject}-${widget.topic}-${widget.lessonTitle}-isSubmitted',
+        _isSubmitted);
     await _prefs?.setInt(
-        '$_username-${widget.subject}-${widget.topic}-${widget.lessonTitle}-correctAnswers', _correctAnswers);
+        '$_userId-${widget.subject}-${widget.topic}-${widget.lessonTitle}-correctAnswers',
+        _correctAnswers);
   }
 
   @override

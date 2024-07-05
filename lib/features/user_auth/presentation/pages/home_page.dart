@@ -16,7 +16,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  late User? _user;
   int _page = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _user = FirebaseAuth.instance.currentUser;
+  }
 
   void _logout() async {
     await FirebaseAuth.instance.signOut();
@@ -35,6 +42,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     Map<String, dynamic>? profileData =
         Provider.of<UserProvider>(context).profileData;
+    String? userId = _user?.uid; // Assuming you can retrieve userId from _user
 
     return Scaffold(
       appBar: AppBar(
@@ -116,8 +124,7 @@ class _HomePageState extends State<HomePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          ProgressPage(username: profileData?['username']),
+                      builder: (context) => ProgressPage(userId: userId ?? ''),
                     ),
                   );
                 },

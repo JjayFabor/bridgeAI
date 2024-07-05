@@ -57,6 +57,7 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
 
   Future<void> _removeSubject(String subject) async {
     if (_user != null) {
+      final userId = _user!.uid;
       // Remove subject and its topics from local storage
       setState(() {
         subjects.remove(subject);
@@ -64,6 +65,8 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
       });
       await _saveSubjects();
       await _removeSubjectFromFirestore(subject);
+      await _removeSubjectProgressCache(
+          subject, userId); // Delete the cached progress data
     }
   }
 
@@ -231,6 +234,44 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
       });
     }
   }
+
+  Future<void> _removeSubjectProgressCache(String subject, String userId) async {
+  final prefs = await SharedPreferences.getInstance();
+  logger.i('Starting to remove cache data for subject: $subject');
+
+  // Get the list of topics for the subject
+  List<String>? topics = prefs.getStringList('$userId-$subject-topics') ?? [];
+  logger.i('Topics to be removed for subject $subject: $topics');
+
+  for (String topic in topics) {
+    // Get the list of lessons for each topic
+    List<String>? lessons = prefs.getStringList('$userId-$subject-$topic-lessons') ?? [];
+    logger.i('Lessons to be removed for topic $topic: $lessons');
+
+    // Remove lesson scores and timestamps
+    for (String lesson in lessons) {
+      await prefs.remove('$userId-$subject-$topic-$lesson-score');
+      await prefs.remove('$userId-$subject-$topic-$lesson-timestamp');
+      logger.i('Removed score and timestamp for lesson $lesson');
+    }
+
+    // Remove the list of lessons for the topic
+    await prefs.remove('$userId-$subject-$topic-lessons');
+    logger.i('Removed lessons list for topic $topic');
+  }
+
+  // Remove the list of topics for the subject
+  await prefs.remove('$userId-$subject-topics');
+  logger.i('Removed topics list for subject $subject');
+
+  // Optionally, remove the subject from the list of subjects
+  List<String>? subjects = prefs.getStringList('$userId-subjects') ?? [];
+  subjects.remove(subject);
+  await prefs.setStringList('$userId-subjects', subjects);
+  logger.i('Removed subject $subject from subjects list. Remaining subjects: $subjects');
+
+  logger.i('Finished removing cache data for subject: $subject');
+}
 
   @override
   Widget build(BuildContext context) {
