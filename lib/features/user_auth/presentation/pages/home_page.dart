@@ -98,18 +98,9 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.search, color: Colors.white),
-                title: const Text('Search', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  setState(() {
-                    _page = 1;
-                  });
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
                 leading: const Icon(Icons.person, color: Colors.white),
-                title: const Text('Profile', style: TextStyle(color: Colors.white)),
+                title: const Text('Profile',
+                    style: TextStyle(color: Colors.white)),
                 onTap: () {
                   setState(() {
                     _page = 2;
@@ -119,12 +110,14 @@ class _HomePageState extends State<HomePage> {
               ),
               ListTile(
                 leading: const Icon(Icons.assessment, color: Colors.white),
-                title: const Text('Progress', style: TextStyle(color: Colors.white)),
+                title: const Text('Progress',
+                    style: TextStyle(color: Colors.white)),
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ProgressPage(username: profileData?['username']),
+                      builder: (context) =>
+                          ProgressPage(username: profileData?['username']),
                     ),
                   );
                 },
@@ -132,14 +125,16 @@ class _HomePageState extends State<HomePage> {
               const Spacer(),
               ListTile(
                 leading: const Icon(Icons.settings, color: Colors.white),
-                title: const Text('Settings', style: TextStyle(color: Colors.white)),
+                title: const Text('Settings',
+                    style: TextStyle(color: Colors.white)),
                 onTap: () {
                   // Add the desired functionality here
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.logout, color: Colors.white),
-                title: const Text('Logout', style: TextStyle(color: Colors.white)),
+                title:
+                    const Text('Logout', style: TextStyle(color: Colors.white)),
                 onTap: _logout,
               ),
             ],
