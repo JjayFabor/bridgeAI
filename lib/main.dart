@@ -14,16 +14,17 @@ void main() async {
 
   final userProvider = UserProvider();
 
-  runApp( MultiProvider(
+  runApp(
+    MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => userProvider),
       ],
       child: const MyApp(),
-    ),);
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-
   const MyApp({super.key});
 
   @override

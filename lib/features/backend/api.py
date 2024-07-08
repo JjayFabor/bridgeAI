@@ -228,8 +228,6 @@ def generate_course_and_quiz(topic):
     return reRun_model_if_needed(combined_model, prompt)
 
 
-
-
 @app.route('/generate-topics', methods=['GET'])
 def generate_topics_route():
     name = request.args.get('name')
