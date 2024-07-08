@@ -277,6 +277,10 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
                             currentLesson['quizzes']),
                         onNext: _onPageCompleted,
                         onPrev: _onPagePrevious,
+                        onFinish: () {
+                          Navigator.of(context)
+                              .pop(); // Finish and navigate back
+                        },
                         isLastPage: currentLessonIndex == totalLessons - 1,
                       ),
                     ],

@@ -10,6 +10,7 @@ class QuizzesPage extends StatefulWidget {
   final List<Map<String, dynamic>> quizzes;
   final VoidCallback onNext;
   final VoidCallback? onPrev;
+  final VoidCallback onFinish; // Add this line
   final bool isLastPage;
 
   const QuizzesPage({
@@ -20,6 +21,7 @@ class QuizzesPage extends StatefulWidget {
     required this.quizzes,
     required this.onNext,
     this.onPrev,
+    required this.onFinish, // Add this line
     required this.isLastPage,
   });
 
@@ -28,34 +30,42 @@ class QuizzesPage extends StatefulWidget {
 }
 
 class _QuizzesPageState extends State<QuizzesPage> {
-  late User? _user;
+  User? _user;
   late List<int?> _selectedAnswers;
   bool _isSubmitted = false;
   int _correctAnswers = 0;
   SharedPreferences? _prefs;
-  late String _userId; // Declare _userId as a class-level variable
+  late String _userId;
   final Logger logger = Logger();
 
   @override
   void initState() {
     super.initState();
-    _user = FirebaseAuth.instance.currentUser;
-    _userId = _user!.uid; // Initialize _userId here
+    _initializeUser();
     _initializeQuiz();
+  }
+
+  Future<void> _initializeUser() async {
+    _user = FirebaseAuth.instance.currentUser;
+    if (_user != null) {
+      _userId = _user!.uid;
+    }
   }
 
   Future<void> _initializeQuiz() async {
     _prefs = await SharedPreferences.getInstance();
 
-    _selectedAnswers = List<int?>.filled(widget.quizzes.length, null);
-    _isSubmitted = false;
-    _correctAnswers = 0;
+    setState(() {
+      _selectedAnswers = List<int?>.filled(widget.quizzes.length, null);
+      _isSubmitted = false;
+      _correctAnswers = 0;
+    });
 
     // Load saved state
-    _loadQuizState();
+    await _loadQuizState();
   }
 
-  void _loadQuizState() async {
+  Future<void> _loadQuizState() async {
     final savedAnswers = _prefs?.getStringList(
         '$_userId-${widget.subject}-${widget.topic}-${widget.lessonTitle}-answers');
     final savedIsSubmitted = _prefs?.getBool(
@@ -63,27 +73,23 @@ class _QuizzesPageState extends State<QuizzesPage> {
     final savedCorrectAnswers = _prefs?.getInt(
         '$_userId-${widget.subject}-${widget.topic}-${widget.lessonTitle}-correctAnswers');
 
-    if (savedAnswers != null) {
-      setState(() {
+    setState(() {
+      if (savedAnswers != null) {
         _selectedAnswers =
             savedAnswers.map((e) => e.isEmpty ? null : int.parse(e)).toList();
-      });
-    }
+      }
 
-    if (savedIsSubmitted != null) {
-      setState(() {
+      if (savedIsSubmitted != null) {
         _isSubmitted = savedIsSubmitted;
-      });
-    }
+      }
 
-    if (savedCorrectAnswers != null) {
-      setState(() {
+      if (savedCorrectAnswers != null) {
         _correctAnswers = savedCorrectAnswers;
-      });
-    }
+      }
+    });
   }
 
-  void _submitQuiz() async {
+  Future<void> _submitQuiz() async {
     logger.i("UserID: $_userId");
     int correctAnswers = 0;
     for (int i = 0; i < widget.quizzes.length; i++) {
@@ -112,29 +118,17 @@ class _QuizzesPageState extends State<QuizzesPage> {
     await _prefs?.setString('$userId-$subject-$topic-$lessonTitle-timestamp',
         DateTime.now().toString());
 
-    // Save the lesson title
-    List<String>? subjects = _prefs?.getStringList('$userId-subjects') ?? [];
-    if (!subjects.contains(subject)) {
-      subjects.add(subject);
-      await _prefs?.setStringList('$userId-subjects', subjects);
-      logger.i('Stored subject: $subject for user: $userId');
-    }
+    await _saveStringListItem('$userId-subjects', subject);
+    await _saveStringListItem('$userId-$subject-topics', topic);
+    await _saveStringListItem('$userId-$subject-$topic-lessons', lessonTitle);
+  }
 
-    List<String>? topics =
-        _prefs?.getStringList('$userId-$subject-topics') ?? [];
-    if (!topics.contains(topic)) {
-      topics.add(topic);
-      await _prefs?.setStringList('$userId-$subject-topics', topics);
-      logger.i('Stored topic: $topic for user: $userId and subject: $subject');
-    }
-
-    List<String>? lessons =
-        _prefs?.getStringList('$userId-$subject-$topic-lessons') ?? [];
-    if (!lessons.contains(lessonTitle)) {
-      lessons.add(lessonTitle);
-      await _prefs?.setStringList('$userId-$subject-$topic-lessons', lessons);
-      logger.i(
-          'Stored lesson: $lessonTitle for user: $userId, subject: $subject, and topic: $topic');
+  Future<void> _saveStringListItem(String key, String value) async {
+    List<String>? items = _prefs?.getStringList(key) ?? [];
+    if (!items.contains(value)) {
+      items.add(value);
+      await _prefs?.setStringList(key, items);
+      logger.i('Stored $value in $key');
     }
   }
 
@@ -261,9 +255,10 @@ class _QuizzesPageState extends State<QuizzesPage> {
                                 ),
                               ),
                               ElevatedButton(
-                                onPressed: widget.onNext,
-                                child:
-                                    Text(widget.isLastPage ? 'Finish' : 'Next'),
+                                onPressed: widget.isLastPage
+                                    ? widget.onFinish // Call onFinish if isLastPage is true
+                                    : widget.onNext,
+                                child: Text(widget.isLastPage ? 'Finish' : 'Next'),
                               ),
                             ],
                           )
