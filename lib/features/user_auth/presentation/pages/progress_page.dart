@@ -1,55 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'user_progress.dart';
+
 class ProgressPage extends StatelessWidget {
   final String userId;
 
   const ProgressPage({super.key, required this.userId});
 
-  Future<Map<String, dynamic>> _getProgressData() async {
+  Future<UserProgress> _getProgressData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    Map<String, dynamic> progressData = {};
+    List<Subject> subjects = [];
 
-    List<String>? subjects = prefs.getStringList('$userId-subjects') ?? [];
+    List<String>? subjectNames = prefs.getStringList('$userId-subjects') ?? [];
 
-    for (String subject in subjects) {
-      List<String>? topics =
-          prefs.getStringList('$userId-$subject-topics') ?? [];
-      Map<String, dynamic> topicsData = {};
+    for (String subjectName in subjectNames) {
+      List<String>? topicNames =
+          prefs.getStringList('$userId-$subjectName-topics') ?? [];
+      List<Topic> topics = [];
 
-      for (String topic in topics) {
-        List<String>? lessons =
-            prefs.getStringList('$userId-$subject-$topic-lessons') ?? [];
-        List<Map<String, dynamic>> lessonsData = [];
+      for (String topicName in topicNames) {
+        List<String>? lessonTitles =
+            prefs.getStringList('$userId-$subjectName-$topicName-lessons') ??
+                [];
+        List<Lesson> lessons = [];
 
-        for (String lesson in lessons) {
-          int? score = prefs.getInt('$userId-$subject-$topic-$lesson-score');
-          String? timestamp =
-              prefs.getString('$userId-$subject-$topic-$lesson-timestamp');
+        for (String lessonTitle in lessonTitles) {
+          int? score = prefs
+              .getInt('$userId-$subjectName-$topicName-$lessonTitle-score');
+          String? timestamp = prefs.getString(
+              '$userId-$subjectName-$topicName-$lessonTitle-timestamp');
 
           if (score != null && timestamp != null) {
-            lessonsData.add({
-              'lessonTitle': lesson,
-              'score': score,
-              'timestamp': timestamp,
-            });
+            lessons.add(
+                Lesson(title: lessonTitle, score: score, timestamp: timestamp));
           }
         }
 
-        topicsData[topic] = lessonsData;
+        topics.add(Topic(name: topicName, lessons: lessons));
       }
 
-      progressData[subject] = topicsData;
+      subjects.add(Subject(name: subjectName, topics: topics));
     }
 
-    return progressData;
+    return UserProgress(userId: userId, subjects: subjects);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Your Progress')),
-      body: FutureBuilder<Map<String, dynamic>>(
+      body: FutureBuilder<UserProgress>(
         future: _getProgressData(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
@@ -58,34 +59,28 @@ class ProgressPage extends StatelessWidget {
 
           final progressData = snapshot.data!;
 
-          if (progressData.isEmpty) {
+          if (progressData.subjects.isEmpty) {
             return const Center(child: Text('No progress data available.'));
           }
 
           return ListView.builder(
-            itemCount: progressData.keys.length,
+            itemCount: progressData.subjects.length,
             itemBuilder: (context, subjectIndex) {
-              String subject = progressData.keys.elementAt(subjectIndex);
-              Map<String, dynamic> topicsData = progressData[subject];
+              Subject subject = progressData.subjects[subjectIndex];
 
               return ExpansionTile(
-                title: Text(subject,
+                title: Text(subject.name,
                     style: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.bold)),
-                children: topicsData.keys.map<Widget>((String topic) {
-                  List<Map<String, dynamic>> lessonsData = topicsData[topic];
-
+                children: subject.topics.map<Widget>((Topic topic) {
                   return ExpansionTile(
-                    title: Text(topic, style: const TextStyle(fontSize: 16)),
-                    children: lessonsData
-                        .map<Widget>((Map<String, dynamic> lessonData) {
-                      final lessonTitle = lessonData['lessonTitle'];
-                      final score = lessonData['score'];
-                      final timestamp = lessonData['timestamp'];
-
+                    title:
+                        Text(topic.name, style: const TextStyle(fontSize: 16)),
+                    children: topic.lessons.map<Widget>((Lesson lesson) {
                       return ListTile(
-                        title: Text(lessonTitle),
-                        subtitle: Text('Score: $score\nDate: $timestamp'),
+                        title: Text(lesson.title),
+                        subtitle: Text(
+                            'Score: ${lesson.score}\nDate: ${lesson.timestamp}'),
                       );
                     }).toList(),
                   );

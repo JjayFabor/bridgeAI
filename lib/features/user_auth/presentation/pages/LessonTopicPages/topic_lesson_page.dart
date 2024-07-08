@@ -125,7 +125,6 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
             },
             "quizzes": [
               {
-                // "title": "Default Lesson",
                 "questions": [
                   {
                     "question": "Default Question",
