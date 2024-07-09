@@ -1,12 +1,12 @@
-import 'package:bridgeai/features/user_auth/presentation/widgets/form_container_widget.dart';
-import 'package:bridgeai/global/common/toast.dart';
+import 'package:bridgeai/features/frontend/widgets/form_container_widget.dart';
+import 'package:bridgeai/global/common/alert_dialog.dart';
 import 'package:bridgeai/global/provider_implementation/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'home_page.dart';
+import '../dashboard_page/home_page.dart';
 
 class CreateProfileScreen extends StatefulWidget {
   final String username;
@@ -79,7 +79,10 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
           });
         }
 
-        showToast(message: "Profile created successfully");
+        // showToast(message: "Profile created successfully");
+        if (mounted) {
+          showAlertDialog(context, "Profile created successfully");
+        }
         if (mounted) {
           Navigator.push(
             context,
@@ -88,7 +91,9 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
         }
       } catch (e) {
         setState(() {
-          _errorMessage = 'An error occurred while saving the profile: $e';
+          // _errorMessage = 'An error occurred while saving the profile: $e';
+          showAlertDialog(
+              context, 'An error occurred while saving the profile: $e');
         });
       }
     }

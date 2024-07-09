@@ -394,9 +394,7 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Subject "$newSubject" already exists.')),
-          );
+          _showSnackBar(message: 'Subject "$newSubject" already exists.');
         }
       }
     }
@@ -447,6 +445,14 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
           ],
         );
       },
+    );
+  }
+
+  void _showSnackBar({required String message}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
     );
   }
 }

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'global/provider_implementation/user_provider.dart';
 import 'features/app/splash_screen/splash_screen.dart';
-import 'features/user_auth/presentation/pages/login_screen.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:bridgeai/features/frontend/pages/login_page/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -1,7 +1,7 @@
-import 'package:bridgeai/features/user_auth/presentation/pages/homepage_dashboard.dart';
-import 'package:bridgeai/features/user_auth/presentation/pages/login_screen.dart';
-import 'package:bridgeai/features/user_auth/presentation/pages/profile_page.dart';
-import 'package:bridgeai/features/user_auth/presentation/pages/progress_page.dart';
+import 'package:bridgeai/features/frontend/pages/dashboard_page/homepage_dashboard.dart';
+import 'package:bridgeai/features/frontend/pages/login_page/login_screen.dart';
+import 'package:bridgeai/features/frontend/pages/profile_page/profile_page.dart';
+import 'package:bridgeai/features/frontend/pages/profile_page/progress_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';

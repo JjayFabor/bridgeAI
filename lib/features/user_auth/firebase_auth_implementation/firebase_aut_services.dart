@@ -1,4 +1,4 @@
-import 'package:bridgeai/global/common/toast.dart';
+import 'package:bridgeai/global/common/alert_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class FirebaseAuthServices {
@@ -9,12 +9,17 @@ class FirebaseAuthServices {
     try {
       UserCredential credential = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
-      return credential.user;
+      User? user = credential.user;
+
+      // Send verification email
+      if (user != null && !user.emailVerified) {
+        await user.sendEmailVerification();
+      }
+
+      return user;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
-        showToast(message: 'Email already in use');
-      } else {
-        showToast(message: 'An error occurred: ${e.code}');
+        // showToast(message: 'Email already in use');
       }
     }
     return null;
@@ -29,8 +34,6 @@ class FirebaseAuthServices {
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found' || e.code == 'wrong-password') {
         showToast(message: 'Invalid email or password');
-      } else {
-        // showToast(message: 'An error occurred: ${e.code}');
       }
     }
     return null;

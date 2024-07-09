@@ -1,11 +1,9 @@
 import 'package:bridgeai/features/user_auth/firebase_auth_implementation/firebase_aut_services.dart';
-import 'package:bridgeai/features/user_auth/presentation/pages/login_screen.dart';
-import 'package:bridgeai/features/user_auth/presentation/widgets/form_container_widget.dart';
-import 'package:bridgeai/global/common/toast.dart';
+import 'package:bridgeai/features/frontend/pages/login_page/login_screen.dart';
+import 'package:bridgeai/features/frontend/widgets/form_container_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import 'create_profile_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -29,6 +27,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  bool _isValidEmail(String email) {
+    // Regular expression for validating an Email
+    String p = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$';
+    RegExp regExp = RegExp(p);
+    return regExp.hasMatch(email);
   }
 
   @override
@@ -88,18 +93,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           ElevatedButton(
                             onPressed: _signUp,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  const Color(0xFFACE2E1), // Button color
+                              backgroundColor: const Color(0xFFACE2E1), // Button color
                               foregroundColor: Colors.black, // Text color
                               fixedSize: const Size(207, 51), // Button Size
                               shape: const RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10)),
+                                borderRadius: BorderRadius.all(Radius.circular(10)),
                               ),
                             ),
                             child: _isSignUp
-                                ? const CircularProgressIndicator(
-                                    color: Colors.white)
+                                ? const CircularProgressIndicator(color: Colors.white)
                                 : Text(
                                     'Sign Up',
                                     style: GoogleFonts.mitr(
@@ -163,6 +165,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
     String password = _passwordController.text;
     String username = _userController.text;
 
+    if (!_isValidEmail(email)) {
+      showAlertDialog(context, "Please enter a valid email address.");
+      setState(() {
+        _isSignUp = false;
+      });
+      return;
+    }
+
     User? user = await _auth.signUpWithEmailandPassword(email, password);
 
     setState(() {
@@ -171,19 +181,49 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     if (mounted) {
       if (user != null) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CreateProfileScreen(
-              username: username,
-              email: email,
-              password: password,
+        if (!user.emailVerified) {
+          await user.sendEmailVerification(); // Send verification email
+          if (mounted) {
+            showAlertDialog(
+                context,
+                "A verification email has been sent to $email. "
+                "Please verify your email.");
+          }
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CreateProfileScreen(
+                username: username,
+                email: email,
+                password: password,
+              ),
             ),
-          ),
-        );
+          );
+        }
       } else {
-        showToast(message: "An unknown error occurred. Please try again!");
+        showAlertDialog(context, "An unknown error occurred. Please try again!");
       }
     }
   }
+}
+
+void showAlertDialog(BuildContext context, String message) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Alert'),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
 }
