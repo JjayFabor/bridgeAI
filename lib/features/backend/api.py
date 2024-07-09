@@ -74,14 +74,15 @@ def generate_topics(name, age, grade_level, subject, country):
     prompt = (
         f"Create a list of 5 main topics for a student named {name} who is {age} years old, "
         f"in grade {grade_level}, living in {country}, and wants to learn {subject}. "
-        "The topics should cover fundamental concepts related to the subject. "
-        "\nIt should be stored in with this json format: "
+        "The topics should be appropriate for the student's grade level and age, covering fundamental concepts related to the subject. "
+        "\nIt should be stored in with this JSON format: "
         "{\n"
         "    \"topics\": [\"topic1\", \"topic2\", \"topic3\", \"topic4\", \"topic5\"]\n"
         "}"
     )
 
     return reRun_model_if_needed(topics_model, prompt)
+
 
 def generate_course_and_quiz(topic):
     prompt = f"""
