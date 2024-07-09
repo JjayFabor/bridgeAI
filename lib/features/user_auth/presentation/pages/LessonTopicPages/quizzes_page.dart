@@ -1,5 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,7 +11,7 @@ class QuizzesPage extends StatefulWidget {
   final List<Map<String, dynamic>> quizzes;
   final VoidCallback onNext;
   final VoidCallback? onPrev;
-  final VoidCallback onFinish; // Add this line
+  final VoidCallback onFinish;
   final bool isLastPage;
 
   const QuizzesPage({
@@ -21,7 +22,7 @@ class QuizzesPage extends StatefulWidget {
     required this.quizzes,
     required this.onNext,
     this.onPrev,
-    required this.onFinish, // Add this line
+    required this.onFinish,
     required this.isLastPage,
   });
 
@@ -158,6 +159,43 @@ class _QuizzesPageState extends State<QuizzesPage> {
         _correctAnswers);
   }
 
+  Future<void> _unlockNextTopic() async {
+    if (_user != null) {
+      try {
+        final subjectRef = FirebaseFirestore.instance
+            .collection('profiles')
+            .doc(_user!.uid)
+            .collection('subjects')
+            .doc(widget.subject);
+
+        final topicsCollection = subjectRef.collection('topics');
+        final currentTopicDoc = await topicsCollection.doc(widget.topic).get();
+
+        if (currentTopicDoc.exists) {
+          final currentOrder = currentTopicDoc.data()?['order'] ?? 0;
+          final nextTopicQuery = await topicsCollection
+              .where('order', isEqualTo: currentOrder + 1)
+              .limit(1)
+              .get();
+
+          if (nextTopicQuery.docs.isNotEmpty) {
+            final nextTopicDoc = nextTopicQuery.docs.first;
+            await nextTopicDoc.reference.update({'unlocked': true});
+            logger.i('Unlocked next topic: ${nextTopicDoc.id}');
+          } else {
+            logger.w('No next topic found with order ${currentOrder + 1}');
+          }
+        } else {
+          logger.w('Current topic document does not exist: ${widget.topic}');
+        }
+      } catch (e) {
+        logger.e('Error unlocking next topic: $e');
+      }
+    } else {
+      logger.e('User is not logged in');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return _prefs == null
@@ -255,10 +293,19 @@ class _QuizzesPageState extends State<QuizzesPage> {
                                 ),
                               ),
                               ElevatedButton(
-                                onPressed: widget.isLastPage
-                                    ? widget.onFinish // Call onFinish if isLastPage is true
-                                    : widget.onNext,
-                                child: Text(widget.isLastPage ? 'Finish' : 'Next'),
+                                onPressed: () async {
+                                  if (widget.isLastPage) {
+                                    logger.i(
+                                        "Last page detected. Unlocking next topic...");
+                                    await _unlockNextTopic();
+                                    logger.i("Unlock next topic successful.");
+                                    widget.onFinish();
+                                  } else {
+                                    widget.onNext();
+                                  }
+                                },
+                                child:
+                                    Text(widget.isLastPage ? 'Finish' : 'Next'),
                               ),
                             ],
                           )

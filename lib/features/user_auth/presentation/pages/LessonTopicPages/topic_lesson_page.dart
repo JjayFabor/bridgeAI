@@ -3,9 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-
 import 'package:http/http.dart' as http;
-
 import 'explanation_page.dart';
 import 'examples_page.dart';
 import 'practice_questions_page.dart';
@@ -177,7 +175,7 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
     }
   }
 
-  void _onPageCompleted() {
+  void _onPageCompleted() async {
     setState(() {
       if (currentPageIndex < totalPages - 1) {
         currentPageIndex++;
@@ -277,9 +275,9 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
                             currentLesson['quizzes']),
                         onNext: _onPageCompleted,
                         onPrev: _onPagePrevious,
-                        onFinish: () {
-                          Navigator.of(context)
-                              .pop(); // Finish and navigate back
+                        onFinish: () async {
+                          _onPageCompleted();
+                          Navigator.pop(context);
                         },
                         isLastPage: currentLessonIndex == totalLessons - 1,
                       ),

@@ -189,7 +189,8 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
             loadingSubjects.remove(subject);
           });
           await _saveSubjects();
-          await _saveTopicsToFirestore(subject, topics);
+          await _saveTopicsToFirestore(
+              subject, topics); // Ensure the unlocked field is set
         }
       } else {
         logger.i('Failed to load topics for $subject');
@@ -209,6 +210,22 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
     }
   }
 
+  Future<List<String>> _fetchTopicsFromFirestore(String subject) async {
+    if (_user != null) {
+      DocumentReference subjectRef = _firestore
+          .collection('profiles')
+          .doc(_user!.uid)
+          .collection('subjects')
+          .doc(subject);
+
+      QuerySnapshot topicSnapshot =
+          await subjectRef.collection('topics').orderBy('order').get();
+
+      return topicSnapshot.docs.map((doc) => doc['name'] as String).toList();
+    }
+    return [];
+  }
+
   Future<void> _saveTopicsToFirestore(
       String subject, List<String> topics) async {
     if (_user != null) {
@@ -217,11 +234,20 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
           .doc(_user!.uid)
           .collection('subjects')
           .doc(subject);
-      for (String topic in topics) {
-        await subjectRef.collection('topics').doc(topic).set({
-          'name': topic,
+
+      WriteBatch batch = _firestore.batch();
+
+      for (int i = 0; i < topics.length; i++) {
+        DocumentReference topicRef =
+            subjectRef.collection('topics').doc(topics[i]);
+        batch.set(topicRef, {
+          'name': topics[i],
+          'unlocked': i == 0 ? true : false, // Unlock the first topic
+          'order': i, // Save the order
         });
       }
+
+      await batch.commit();
     }
   }
 
@@ -235,43 +261,46 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
     }
   }
 
-  Future<void> _removeSubjectProgressCache(String subject, String userId) async {
-  final prefs = await SharedPreferences.getInstance();
-  logger.i('Starting to remove cache data for subject: $subject');
+  Future<void> _removeSubjectProgressCache(
+      String subject, String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    logger.i('Starting to remove cache data for subject: $subject');
 
-  // Get the list of topics for the subject
-  List<String>? topics = prefs.getStringList('$userId-$subject-topics') ?? [];
-  logger.i('Topics to be removed for subject $subject: $topics');
+    // Get the list of topics for the subject
+    List<String>? topics = prefs.getStringList('$userId-$subject-topics') ?? [];
+    logger.i('Topics to be removed for subject $subject: $topics');
 
-  for (String topic in topics) {
-    // Get the list of lessons for each topic
-    List<String>? lessons = prefs.getStringList('$userId-$subject-$topic-lessons') ?? [];
-    logger.i('Lessons to be removed for topic $topic: $lessons');
+    for (String topic in topics) {
+      // Get the list of lessons for each topic
+      List<String>? lessons =
+          prefs.getStringList('$userId-$subject-$topic-lessons') ?? [];
+      logger.i('Lessons to be removed for topic $topic: $lessons');
 
-    // Remove lesson scores and timestamps
-    for (String lesson in lessons) {
-      await prefs.remove('$userId-$subject-$topic-$lesson-score');
-      await prefs.remove('$userId-$subject-$topic-$lesson-timestamp');
-      logger.i('Removed score and timestamp for lesson $lesson');
+      // Remove lesson scores and timestamps
+      for (String lesson in lessons) {
+        await prefs.remove('$userId-$subject-$topic-$lesson-score');
+        await prefs.remove('$userId-$subject-$topic-$lesson-timestamp');
+        logger.i('Removed score and timestamp for lesson $lesson');
+      }
+
+      // Remove the list of lessons for the topic
+      await prefs.remove('$userId-$subject-$topic-lessons');
+      logger.i('Removed lessons list for topic $topic');
     }
 
-    // Remove the list of lessons for the topic
-    await prefs.remove('$userId-$subject-$topic-lessons');
-    logger.i('Removed lessons list for topic $topic');
+    // Remove the list of topics for the subject
+    await prefs.remove('$userId-$subject-topics');
+    logger.i('Removed topics list for subject $subject');
+
+    // Optionally, remove the subject from the list of subjects
+    List<String>? subjects = prefs.getStringList('$userId-subjects') ?? [];
+    subjects.remove(subject);
+    await prefs.setStringList('$userId-subjects', subjects);
+    logger.i(
+        'Removed subject $subject from subjects list. Remaining subjects: $subjects');
+
+    logger.i('Finished removing cache data for subject: $subject');
   }
-
-  // Remove the list of topics for the subject
-  await prefs.remove('$userId-$subject-topics');
-  logger.i('Removed topics list for subject $subject');
-
-  // Optionally, remove the subject from the list of subjects
-  List<String>? subjects = prefs.getStringList('$userId-subjects') ?? [];
-  subjects.remove(subject);
-  await prefs.setStringList('$userId-subjects', subjects);
-  logger.i('Removed subject $subject from subjects list. Remaining subjects: $subjects');
-
-  logger.i('Finished removing cache data for subject: $subject');
-}
 
   @override
   Widget build(BuildContext context) {
@@ -375,13 +404,21 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
 
   void _navigateToSubjectTopicScreen(String subject) async {
     await fetchTopicsForSubject(subject);
-    final topics = subjectTopics[subject] ?? [];
     if (mounted) {
-      Navigator.push(
+      List<String> orderedTopics = await _fetchTopicsFromFirestore(subject);
+      setState(() {
+        subjectTopics[subject] = orderedTopics;
+      });
+
+      if (mounted) {
+        Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) =>
-                  SubjectTopicsPage(subject: subject, topics: topics)));
+            builder: (context) =>
+                SubjectTopicsPage(subject: subject, topics: orderedTopics),
+          ),
+        );
+      }
     }
   }
 
