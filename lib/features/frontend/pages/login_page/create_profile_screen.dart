@@ -82,8 +82,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
         // showToast(message: "Profile created successfully");
         if (mounted) {
           showAlertDialog(context, "Profile created successfully");
-        }
-        if (mounted) {
+
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const HomePage()),

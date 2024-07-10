@@ -1,3 +1,4 @@
+import 'package:bridgeai/features/frontend/pages/login_page/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -13,7 +14,8 @@ void showToast({required String message}) {
   );
 }
 
-void showAlertDialog(BuildContext context, String message) {
+void showAlertDialog(BuildContext context, String message,
+    {bool navigateToLogin = false}) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -25,6 +27,13 @@ void showAlertDialog(BuildContext context, String message) {
             child: const Text('OK'),
             onPressed: () {
               Navigator.of(context).pop();
+              if (navigateToLogin) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  (Route<dynamic> route) => false,
+                );
+              }
             },
           ),
         ],

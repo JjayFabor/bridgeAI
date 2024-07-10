@@ -189,20 +189,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
           context,
           "A verification email has been sent to $email. "
           "Please verify your email and log in to complete the sign-up.",
+          navigateToLogin: true,
         );
       }
 
-      // Sign out the user after sending the verification email
-      await _auth.signOut();
+      // Future.delayed(const Duration(seconds: 3), () async {
+      //   // Sign out the user after sending the verification email
+      //   await _auth.signOut();
 
-      if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const LoginScreen(),
-          ),
-        );
-      }
+      //   if (mounted) {
+      //     Navigator.push(
+      //       context,
+      //       MaterialPageRoute(
+      //         builder: (context) => const LoginScreen(),
+      //       ),
+      //     );
+      //   }
+      // });
     } catch (error) {
       if (mounted) {
         showAlertDialog(context, "Error signing up. Please try again.");
