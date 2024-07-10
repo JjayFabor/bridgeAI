@@ -22,7 +22,7 @@ class SplashScreenState extends State<SplashScreen> {
           (route) => false);
     });
     super.initState();
-}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +30,7 @@ class SplashScreenState extends State<SplashScreen> {
       body: Container(
         width: double.infinity,
         decoration: const BoxDecoration(
-          color: Color(0xFF008DDA),
+          color: Color.fromARGB(255, 20, 20, 20),
         ),
         child: Column(
           children: [
@@ -39,9 +39,16 @@ class SplashScreenState extends State<SplashScreen> {
               'Bridge AI',
               style: GoogleFonts.rammettoOne(
                 textStyle: const TextStyle(
-                  fontSize: 48,
+                  fontSize: 58,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      offset: Offset(3, 9),
+                      blurRadius: 9,
+                      color: Colors.white60,
+                    ),
+                  ],
                 ),
               ),
             ),

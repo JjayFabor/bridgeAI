@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
 import '../lesson_topic_pages/topic_lesson_page.dart';
 
@@ -39,7 +40,8 @@ class SubjectTopicsPageState extends State<SubjectTopicsPage> {
           .collection('subjects')
           .doc(widget.subject);
 
-      QuerySnapshot topicSnapshot = await subjectRef.collection('topics').orderBy('order').get();
+      QuerySnapshot topicSnapshot =
+          await subjectRef.collection('topics').orderBy('order').get();
 
       if (mounted) {
         setState(() {
@@ -90,32 +92,103 @@ class SubjectTopicsPageState extends State<SubjectTopicsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.subject} Topics'),
-      ),
-      body: ListView.builder(
-        itemCount: topics.length,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              onPressed: topics[index]['unlocked']
-                  ? () {
-                      final topic = topics[index]['name'];
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => TopicLessonPage(
-                            topic: topic,
-                            subject: widget.subject,
-                          ),
-                        ),
-                      ).then((_) => _fetchTopics());
-                    }
-                  : null,
-              child: Text(topics[index]['name']),
+        toolbarHeight: 70,
+        backgroundColor: const Color.fromARGB(255, 20, 20, 20),
+        foregroundColor: Colors.white,
+        title: Text(
+          'Topics',
+          style: GoogleFonts.cormorant(
+            textStyle: const TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
             ),
-          );
-        },
+          ),
+        ),
+      ),
+      body: Column(
+        children: [
+          const SizedBox(height: 100),
+          Expanded(
+            child: ListView.builder(
+              itemCount: topics.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: IntrinsicHeight(
+                    child: IntrinsicWidth(
+                      stepWidth: MediaQuery.of(context).size.width,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: topics[index]['unlocked']
+                              ? Colors.green
+                                  .shade400 // Vibrant color for unlocked topics
+                              : Colors.grey.shade300, // Disabled color
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: topics[index]['unlocked']
+                              ? 10
+                              : 2, // Elevation for 3D effect
+                        ),
+                        onPressed: topics[index]['unlocked']
+                            ? () {
+                                final topic = topics[index]['name'];
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => TopicLessonPage(
+                                      topic: topic,
+                                      subject: widget.subject,
+                                    ),
+                                  ),
+                                ).then((_) => _fetchTopics());
+                              }
+                            : null,
+                        child: Row(
+                          children: [
+                            Icon(
+                              topics[index]['unlocked']
+                                  ? Icons.star
+                                  : Icons.lock,
+                              color: topics[index]['unlocked']
+                                  ? Colors.yellow.shade700
+                                  : Colors.grey.shade600,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                topics[index]['name'],
+                                style: GoogleFonts.aBeeZee(
+                                  textStyle: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: topics[index]['unlocked']
+                                        ? Colors.white
+                                        : Colors.grey.shade800,
+                                  ),
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (topics[index]['unlocked'])
+                              const Icon(
+                                Icons.arrow_forward,
+                                color: Colors.white,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

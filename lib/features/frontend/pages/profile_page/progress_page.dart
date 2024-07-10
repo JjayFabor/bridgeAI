@@ -49,7 +49,6 @@ class ProgressPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Your Progress')),
       body: FutureBuilder<UserProgress>(
         future: _getProgressData(),
         builder: (context, snapshot) {

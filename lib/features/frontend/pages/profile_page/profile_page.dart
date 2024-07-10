@@ -178,7 +178,7 @@ class _ProfilePageState extends State<ProfilePage> {
         Provider.of<UserProvider>(context).profileData;
 
     return Scaffold(
-      backgroundColor: Colors.blueAccent,
+      backgroundColor: Colors.grey[200],
       body: Center(
         child: profileData != null
             ? Column(
@@ -200,6 +200,14 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   const SizedBox(height: 20),
                   ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      elevation: 10,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
                     onPressed: _isLoading ? null : _uploadProfilePicture,
                     child: _isLoading
                         ? const CircularProgressIndicator()
@@ -207,98 +215,146 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   const SizedBox(height: 20),
                   if (_isEditing)
-                    Column(
-                      children: [
-                        TextField(
-                          controller: _nameController,
-                          decoration: const InputDecoration(labelText: 'Name'),
-                        ),
-                        TextField(
-                          controller: _ageController,
-                          decoration: const InputDecoration(labelText: 'Age'),
-                          keyboardType: TextInputType.number,
-                        ),
-                        TextField(
-                          controller: _gradeController,
-                          decoration:
-                              const InputDecoration(labelText: 'Grade Level'),
-                          keyboardType: TextInputType.number,
-                        ),
-                        TextField(
-                          controller: _countryController,
-                          decoration:
-                              const InputDecoration(labelText: 'Country'),
-                        ),
-                        TextField(
-                          controller: _usernameController,
-                          decoration:
-                              const InputDecoration(labelText: 'Username'),
-                        ),
-                        TextField(
-                          controller: _emailController,
-                          decoration: const InputDecoration(labelText: 'Email'),
-                        ),
-                        TextField(
-                          controller: _passwordController,
-                          decoration:
-                              const InputDecoration(labelText: 'Password'),
-                          obscureText: true,
-                        ),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: _saveProfile,
-                          child: const Text('Save'),
-                        ),
-                      ],
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 5,
+                            blurRadius: 7,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          TextField(
+                            controller: _nameController,
+                            decoration:
+                                const InputDecoration(labelText: 'Name'),
+                          ),
+                          TextField(
+                            controller: _ageController,
+                            decoration: const InputDecoration(labelText: 'Age'),
+                            keyboardType: TextInputType.number,
+                          ),
+                          TextField(
+                            controller: _gradeController,
+                            decoration:
+                                const InputDecoration(labelText: 'Grade Level'),
+                            keyboardType: TextInputType.number,
+                          ),
+                          TextField(
+                            controller: _countryController,
+                            decoration:
+                                const InputDecoration(labelText: 'Country'),
+                          ),
+                          TextField(
+                            controller: _usernameController,
+                            decoration:
+                                const InputDecoration(labelText: 'Username'),
+                          ),
+                          TextField(
+                            controller: _emailController,
+                            decoration:
+                                const InputDecoration(labelText: 'Email'),
+                          ),
+                          TextField(
+                            controller: _passwordController,
+                            decoration:
+                                const InputDecoration(labelText: 'Password'),
+                            obscureText: true,
+                          ),
+                          const SizedBox(height: 20),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              elevation: 10,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                            onPressed: _saveProfile,
+                            child: const Text('Save'),
+                          ),
+                        ],
+                      ),
                     )
                   else
-                    Column(
-                      children: [
-                        Text(
-                          'Name: ${profileData['name']}',
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Age: ${profileData['age']}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Grade Level: ${profileData['grade']}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Country: ${profileData['country']}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Username: ${profileData['username']}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Email: ${profileData['email']}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Password: ${profileData['password']}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              _isEditing = true;
-                            });
-                          },
-                          child: const Text('Edit Profile'),
-                        ),
-                      ],
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 5,
+                            blurRadius: 7,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            'Name: ${profileData['name']}',
+                            style: const TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'Age: ${profileData['age']}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'Grade Level: ${profileData['grade']}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'Country: ${profileData['country']}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'Username: ${profileData['username']}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'Email: ${profileData['email']}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'Password: ${profileData['password']}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(height: 20),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              elevation: 10,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isEditing = true;
+                              });
+                            },
+                            child: const Text('Edit Profile'),
+                          ),
+                        ],
+                      ),
                     ),
                   const SizedBox(height: 20),
                   Text(

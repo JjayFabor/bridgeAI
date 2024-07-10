@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
 import 'package:http/http.dart' as http;
 import 'explanation_page.dart';
@@ -211,8 +212,18 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.topic),
-        backgroundColor: Colors.purple,
+        title: Text(
+          widget.topic,
+          style: GoogleFonts.cormorant(
+            textStyle: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        backgroundColor: const Color.fromARGB(255, 20, 20, 20),
+        foregroundColor: Colors.white,
       ),
       body: FutureBuilder<Map<String, dynamic>>(
         future: topicLesson,

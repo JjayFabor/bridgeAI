@@ -44,6 +44,7 @@ class KeyTermsPage extends StatelessWidget {
                 },
               ),
             ),
+            const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -71,16 +72,17 @@ class KeyTermsPage extends StatelessWidget {
       title: Text(
         term,
         style: const TextStyle(
-          fontSize: 18,
+          fontSize: 24,
           fontWeight: FontWeight.bold,
-          color: Colors.blueAccent,
+          color: Color.fromARGB(255, 20, 20, 20),
         ),
       ),
       subtitle: Text(
         definition,
-        style: const TextStyle(fontSize: 16, color: Colors.black87),
+        style: const TextStyle(fontSize: 20, color: Colors.black87),
       ),
-      leading: const Icon(Icons.book, size: 30, color: Colors.blueAccent),
+      leading: const Icon(Icons.book,
+          size: 30, color: Color.fromARGB(255, 42, 43, 44)),
     );
   }
 }

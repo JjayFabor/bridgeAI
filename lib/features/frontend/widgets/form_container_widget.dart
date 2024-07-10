@@ -42,14 +42,14 @@ class _FormContainerWidgetState extends State<FormContainerWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10.0),
+      margin: const EdgeInsets.symmetric(vertical: 6.0),
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.grey.withOpacity(0.1),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(10),
       ),
       child: TextFormField(
-        style: const TextStyle(color: Colors.blue),
+        style: const TextStyle(color: Colors.black),
         controller: widget.controller,
         keyboardType: widget.isIntegerField == true
             ? TextInputType.number
@@ -77,10 +77,8 @@ class _FormContainerWidgetState extends State<FormContainerWidget> {
                     });
                   },
                   child: Icon(
-                    _obscureText
-                        ? Icons.visibility_off
-                        : Icons.visibility,
-                    color: _obscureText == false ? Colors.blue : Colors.grey,
+                    _obscureText ? Icons.visibility_off : Icons.visibility,
+                    color: _obscureText == false ? Colors.black : Colors.black,
                   ),
                 )
               : null,
@@ -94,7 +92,7 @@ class _FormContainerWidgetState extends State<FormContainerWidget> {
             borderRadius: BorderRadius.all(
               Radius.circular(10.0),
             ),
-            borderSide: BorderSide(color: Colors.blue),
+            borderSide: BorderSide(color: Colors.white),
           ),
           enabledBorder: const OutlineInputBorder(
             borderRadius: BorderRadius.all(
@@ -106,7 +104,7 @@ class _FormContainerWidgetState extends State<FormContainerWidget> {
             borderRadius: BorderRadius.all(
               Radius.circular(10.0),
             ),
-            borderSide: BorderSide(color: Colors.red),
+            borderSide: BorderSide(color: Colors.black),
           ),
         ),
       ),

@@ -33,7 +33,11 @@ class ExplanationPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16.0),
-            Expanded(child: parseMarkdownWithMath(context, content)),
+            Expanded(
+              child: SingleChildScrollView(
+                child: parseMarkdownWithMath(context, content),
+              ),
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -74,16 +78,6 @@ class ExplanationPage extends StatelessWidget {
             styleSheet:
                 MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
               p: const TextStyle(fontSize: 20),
-              // h1: const TextStyle(fontSize: 24),
-              // h2: const TextStyle(fontSize: 24),
-              // h3: const TextStyle(fontSize: 24),
-              // h4: const TextStyle(fontSize: 24),
-              // h5: const TextStyle(fontSize: 24),
-              // h6: const TextStyle(fontSize: 24),
-              // strong: const TextStyle(fontSize: 24),
-              // code: const TextStyle(fontSize: 24),
-              // blockquote: const TextStyle(fontSize: 24),
-              // // Add more styles if needed
             ),
           );
         }

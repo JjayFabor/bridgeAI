@@ -20,6 +20,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool isLogIn = false;
+  bool isHovered = false;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   String errorMessage = '';
@@ -108,7 +109,11 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Container(
         width: double.infinity,
         decoration: const BoxDecoration(
-          color: Color(0xFF008DDA),
+          gradient: LinearGradient(
+            colors: [Color.fromARGB(255, 20, 20, 20), Colors.black],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
         child: SafeArea(
           child: SingleChildScrollView(
@@ -122,41 +127,90 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      const SizedBox(height: 114),
+                      const SizedBox(height: 100),
                       Text(
                         'Bridge AI',
-                        style: GoogleFonts.cormorant(
+                        style: GoogleFonts.rammettoOne(
                           textStyle: const TextStyle(
-                            fontSize: 48,
+                            fontSize: 54,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                offset: Offset(3, 9),
+                                blurRadius: 9,
+                                color: Colors.white60,
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                      const SizedBox(height: 70),
-                      Image.asset(
-                        'assets/welcome.png', // Path to your image
-                        width: 700,
-                        height: 81,
-                        fit: BoxFit.contain, // BoxFit property to fit the image
-                      ),
                       const SizedBox(height: 50),
-                      FormContainerWidget(
-                        controller: _emailController,
-                        hintText: "Email",
-                        hintStyle: GoogleFonts.aBeeZee(
-                            textStyle: const TextStyle(color: Colors.black45)),
-                        isPasswordField: false,
+                      Container(
+                        decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              spreadRadius: 5,
+                              blurRadius: 7,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Image.asset(
+                          'assets/welcome.png',
+                          width: 700,
+                          height: 81,
+                          fit: BoxFit.contain,
+                        ),
                       ),
-                      const SizedBox(height: 10),
-                      FormContainerWidget(
-                        controller: _passwordController,
-                        hintText: "Password",
-                        hintStyle: GoogleFonts.aBeeZee(
-                            textStyle: const TextStyle(color: Colors.black45)),
-                        isPasswordField: true,
+                      const SizedBox(height: 70),
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              spreadRadius: 2,
+                              blurRadius: 5,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                          color: Colors.white,
+                        ),
+                        child: FormContainerWidget(
+                          controller: _emailController,
+                          hintText: "Email",
+                          hintStyle: GoogleFonts.aBeeZee(
+                            textStyle: const TextStyle(color: Colors.black45),
+                          ),
+                          isPasswordField: false,
+                        ),
                       ),
-                      const SizedBox(height: 1),
+                      const SizedBox(height: 20),
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.white,
+                              spreadRadius: 2,
+                              blurRadius: 5,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
+                          color: Colors.white,
+                        ),
+                        child: FormContainerWidget(
+                          controller: _passwordController,
+                          hintText: "Password",
+                          hintStyle: GoogleFonts.aBeeZee(
+                            textStyle: const TextStyle(color: Colors.black45),
+                          ),
+                          isPasswordField: true,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
                       Align(
                         alignment: Alignment.centerRight,
                         child: GestureDetector(
@@ -173,56 +227,93 @@ class _LoginScreenState extends State<LoginScreen> {
                             'Forgot Password?',
                             style: GoogleFonts.aBeeZee(
                               textStyle: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 14,
+                                color: Colors.white,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
+                                shadows: [
+                                  Shadow(
+                                    offset: Offset(1, 1),
+                                    blurRadius: 1,
+                                    color: Colors.black54,
+                                  ),
+                                ],
                               ),
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 100),
                       Column(
                         children: [
-                          ElevatedButton(
-                            onPressed: isLogIn ? null : _login,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  const Color(0xFFACE2E1), // Button color
-                              foregroundColor: Colors.black, // Text color
-                              fixedSize: const Size(207, 51), // Button Size
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(10),
+                          MouseRegion(
+                            onEnter: (_) {
+                              setState(() {
+                                isHovered = true;
+                              });
+                            },
+                            onExit: (_) {
+                              setState(() {
+                                isHovered = false;
+                              });
+                            },
+                            child: ElevatedButton(
+                              onPressed: isLogIn ? null : _login,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    isHovered ? Colors.grey : Colors.white,
+                                foregroundColor: Colors.black,
+                                fixedSize: const Size(207, 51),
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(10),
+                                  ),
                                 ),
+                                elevation: 5,
+                                shadowColor: Colors.white60,
                               ),
-                            ),
-                            child: isLogIn
-                                ? const CircularProgressIndicator(
-                                    color: Colors.white,
-                                  )
-                                : Text(
-                                    'Login',
-                                    style: GoogleFonts.cormorant(
-                                      textStyle: const TextStyle(
-                                        fontSize: 26,
-                                        fontWeight: FontWeight.bold,
+                              child: isLogIn
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.white,
+                                    )
+                                  : Text(
+                                      'Login',
+                                      style: GoogleFonts.cormorant(
+                                        textStyle: const TextStyle(
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.w900,
+                                          shadows: [
+                                            Shadow(
+                                              offset: Offset(2, 2),
+                                              blurRadius: 3,
+                                              color: Colors.black54,
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  ),
+                            ),
                           ),
-                          const SizedBox(height: 5),
+                          const SizedBox(height: 8),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text("Don't have an account?",
-                                  style: GoogleFonts.aBeeZee(
-                                      textStyle: const TextStyle(
-                                    color: Colors.white,
-                                  ))),
-                              const SizedBox(
-                                width: 5,
+                              Text(
+                                "Don't have an account?",
+                                style: GoogleFonts.aBeeZee(
+                                  textStyle: const TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.white70,
+                                    shadows: [
+                                      Shadow(
+                                        offset: Offset(1, 1),
+                                        blurRadius: 1,
+                                        color: Colors.black54,
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
+                              const SizedBox(width: 5),
                               GestureDetector(
                                 onTap: () {
                                   Navigator.push(
@@ -237,15 +328,23 @@ class _LoginScreenState extends State<LoginScreen> {
                                   'Sign Up',
                                   style: GoogleFonts.cormorant(
                                     textStyle: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white,
+                                      shadows: [
+                                        Shadow(
+                                          offset: Offset(2, 3),
+                                          blurRadius: 4,
+                                          color: Colors.white,
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
                               )
                             ],
                           ),
-                          const SizedBox(height: 50), // Space at the bottom
+                          const SizedBox(height: 50),
                         ],
                       ),
                       const SizedBox(height: 20),

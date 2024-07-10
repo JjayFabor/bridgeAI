@@ -305,7 +305,7 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blueAccent,
+      backgroundColor: Colors.grey[200],
       body: Padding(
         padding: const EdgeInsets.all(25.0),
         child: SingleChildScrollView(
@@ -316,8 +316,8 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
             children: [
               ...subjects.map((subject) {
                 final isLoading = loadingSubjects.contains(subject);
-                return ElevatedButton(
-                  onPressed: isLoading
+                return GestureDetector(
+                  onTap: isLoading
                       ? null
                       : () {
                           logger.i("Clicked on $subject");
@@ -328,44 +328,74 @@ class _HomepageDashboardState extends State<HomepageDashboard> {
                       : () {
                           _confirmDeleteSubject(subject);
                         },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    fixedSize: const Size(175, 175),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    width: 375,
+                    height: 125,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blueGrey.shade700,
+                          Colors.blueGrey.shade900,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
                     ),
-                    shadowColor: Colors.black26,
-                    elevation: 5,
-                  ),
-                  child: isLoading
-                      ? const CircularProgressIndicator()
-                      : Text(subject,
-                          style: GoogleFonts.cormorant(
-                            textStyle: const TextStyle(
-                              fontSize: 24,
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
+                    child: Center(
+                      child: isLoading
+                          ? const CircularProgressIndicator()
+                          : Text(
+                              subject,
+                              style: GoogleFonts.cormorant(
+                                textStyle: const TextStyle(
+                                  fontSize: 36,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
                             ),
-                          )),
+                    ),
+                  ),
                 );
               }),
-              ElevatedButton(
-                onPressed: () {
+              GestureDetector(
+                onTap: () {
                   _navigateToAddSubjectScreen();
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  fixedSize: const Size(175, 175),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  width: 375,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.blueGrey.shade700,
+                        Colors.blueGrey.shade900,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
                   ),
-                  shadowColor: Colors.black26,
-                  elevation: 5,
-                ),
-                child: const Icon(
-                  Icons.add,
-                  color: Colors.black,
-                  size: 70,
+                  child: const Icon(
+                    Icons.add,
+                    color: Colors.white,
+                    size: 70,
+                  ),
                 ),
               ),
             ],

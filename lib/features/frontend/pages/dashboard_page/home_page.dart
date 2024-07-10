@@ -42,46 +42,50 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     Map<String, dynamic>? profileData =
         Provider.of<UserProvider>(context).profileData;
-    String? userId = _user?.uid; // Assuming you can retrieve userId from _user
 
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 70,
+        foregroundColor: Colors.white,
         title: Text(
           getTitle(),
           style: GoogleFonts.cormorant(
             textStyle: const TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
           ),
         ),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: const Color.fromARGB(255, 20, 20, 20),
       ),
       drawer: Drawer(
         child: Container(
-          color: Colors.grey[900], // Dark background color
+          color: const Color.fromARGB(255, 20, 20, 20), // Dark background color
           child: Column(
             children: <Widget>[
               UserAccountsDrawerHeader(
+                arrowColor: Colors.white,
                 decoration: const BoxDecoration(
-                  color: Colors.blueAccent,
+                  color: Colors.white,
                 ),
                 accountName: Text(
                   profileData?['username'] ?? 'User Name',
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: Colors.black,
                     fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 accountEmail: Text(
                   profileData?['email'] ?? 'user@example.com',
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: Colors.black,
                     fontSize: 14,
                   ),
                 ),
                 currentAccountPicture: CircleAvatar(
+                  backgroundColor: Colors.black45,
                   backgroundImage: profileData?['profile_picture'] != null
                       ? NetworkImage(profileData!['profile_picture'])
                       : null,
@@ -111,7 +115,7 @@ class _HomePageState extends State<HomePage> {
                     style: TextStyle(color: Colors.white)),
                 onTap: () {
                   setState(() {
-                    _page = 2;
+                    _page = 1;
                   });
                   Navigator.pop(context);
                 },
@@ -121,12 +125,16 @@ class _HomePageState extends State<HomePage> {
                 title: const Text('Progress',
                     style: TextStyle(color: Colors.white)),
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ProgressPage(userId: userId ?? ''),
-                    ),
-                  );
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     builder: (context) => ProgressPage(userId: userId ?? ''),
+                  //   ),
+                  // );
+                  setState(() {
+                    _page = 2;
+                  });
+                  Navigator.pop(context);
                 },
               ),
               const Spacer(),
@@ -157,26 +165,26 @@ class _HomePageState extends State<HomePage> {
       case 0:
         return 'Dashboard';
       case 1:
-        return 'Search';
-      case 2:
         return 'Profile';
+      case 2:
+        return 'Progress';
       default:
         return 'Dashboard';
     }
   }
 
   Widget getSelectedWidget({required int index}) {
+    String? userId = _user?.uid; // Assuming you can retrieve userId from _user
     Widget widget;
     switch (index) {
       case 0:
         widget = const HomepageDashboard();
         break;
       case 1:
-        widget = const Text("Search");
-        break;
-      case 2:
         widget = const ProfilePage();
         break;
+      case 2:
+        widget = ProgressPage(userId: userId ?? '');
       default:
         widget = const HomepageDashboard();
         break;

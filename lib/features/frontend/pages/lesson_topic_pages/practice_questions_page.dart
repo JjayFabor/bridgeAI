@@ -100,30 +100,59 @@ class _PracticeQuestionsPageState extends State<PracticeQuestionsPage> {
         width: 350,
         height: 250,
         child: Card(
-          elevation: 4,
+          shadowColor: Colors.black87,
+          color: const Color.fromARGB(255, 20, 20, 20),
+          elevation: 8,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           child: FlipCard(
             direction: FlipDirection.HORIZONTAL,
             front: Container(
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 20, 20, 20),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    spreadRadius: 2,
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
               padding: const EdgeInsets.all(16.0),
               child: Center(
                 child: Text(
                   question,
                   style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
               ),
             ),
             back: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    spreadRadius: 2,
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
               padding: const EdgeInsets.all(16.0),
-              color: Colors.purple[50],
               child: Center(
                 child: Text(
                   answer,
                   style: const TextStyle(
-                    fontSize: 18,
-                  ),
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.black),
                 ),
               ),
             ),

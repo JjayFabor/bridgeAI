@@ -208,28 +208,53 @@ class _QuizzesPageState extends State<QuizzesPage> {
                     itemCount: widget.quizzes.length,
                     itemBuilder: (context, index) {
                       final quiz = widget.quizzes[index];
-                      return Card(
-                        child: ListTile(
-                          title:
-                              Text(quiz['question'] ?? 'No question provided'),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ...List.generate(quiz['choices']?.length ?? 0,
-                                  (i) {
-                                return RadioListTile<int>(
-                                  title: Text(quiz['choices'][i] ??
-                                      'No choice provided'),
-                                  value: i,
-                                  groupValue: _selectedAnswers[index],
-                                  onChanged: (int? value) {
-                                    setState(() {
-                                      _selectedAnswers[index] = value;
-                                    });
-                                  },
-                                );
-                              }),
-                            ],
+                      return Container(
+                        margin: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              spreadRadius: 2,
+                              blurRadius: 6,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 4,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  quiz['question'] ?? 'No question provided',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                ...List.generate(quiz['choices']?.length ?? 0,
+                                    (i) {
+                                  return RadioListTile<int>(
+                                    title: Text(quiz['choices'][i] ??
+                                        'No choice provided'),
+                                    value: i,
+                                    groupValue: _selectedAnswers[index],
+                                    onChanged: (int? value) {
+                                      setState(() {
+                                        _selectedAnswers[index] = value;
+                                      });
+                                    },
+                                  );
+                                }),
+                              ],
+                            ),
                           ),
                         ),
                       );
@@ -265,27 +290,55 @@ class _QuizzesPageState extends State<QuizzesPage> {
                                         quiz['choices']
                                                 [_selectedAnswers[index]!] ==
                                             quiz['answer'];
-                                    return Card(
-                                      child: ListTile(
-                                        title: Text(quiz['question'] ??
-                                            'No question provided'),
-                                        subtitle: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Your answer: ${_selectedAnswers[index] != null ? quiz['choices'][_selectedAnswers[index]!] : 'No answer provided'}',
-                                              style: TextStyle(
-                                                  color: isCorrect
-                                                      ? Colors.green
-                                                      : Colors.red),
-                                            ),
-                                            Text(
-                                              'Correct answer: ${quiz['answer']}',
-                                              style: const TextStyle(
-                                                  color: Colors.green),
-                                            ),
-                                          ],
+                                    return Container(
+                                      margin: const EdgeInsets.all(8.0),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(16),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.2),
+                                            spreadRadius: 2,
+                                            blurRadius: 6,
+                                            offset: const Offset(0, 3),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Card(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(16),
+                                        ),
+                                        elevation: 4,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                quiz['question'] ??
+                                                    'No question provided',
+                                                style: const TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Text(
+                                                'Your answer: ${_selectedAnswers[index] != null ? quiz['choices'][_selectedAnswers[index]!] : 'No answer provided'}',
+                                                style: TextStyle(
+                                                    color: isCorrect
+                                                        ? Colors.green
+                                                        : Colors.red),
+                                              ),
+                                              Text(
+                                                'Correct answer: ${quiz['answer']}',
+                                                style: const TextStyle(
+                                                    color: Colors.green),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     );

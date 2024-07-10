@@ -18,7 +18,7 @@ class AddSubjectPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Add Subject"),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: const Color.fromARGB(255, 20, 20, 20),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
