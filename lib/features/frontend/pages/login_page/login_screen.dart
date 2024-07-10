@@ -78,11 +78,13 @@ class _LoginScreenState extends State<LoginScreen> {
             }
           }
         } else {
-          showAlertDialog(
-              context, "Please verify your email before logging in.");
-          setState(() {
-            isLogIn = false;
-          });
+          if (mounted) {
+            showAlertDialog(
+                context, "Please verify your email before logging in.");
+            setState(() {
+              isLogIn = false;
+            });
+          }
         }
       }
     } catch (e) {
