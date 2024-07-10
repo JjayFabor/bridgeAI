@@ -1,11 +1,11 @@
 import 'package:bridgeai/features/frontend/widgets/form_container_widget.dart';
+import 'package:bridgeai/global/common/alert_dialog.dart';
 import 'package:bridgeai/global/provider_implementation/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'create_profile_screen.dart';
 import 'forgot_password_page.dart';
 import '../dashboard_page/home_page.dart';
@@ -39,107 +39,55 @@ class _LoginScreenState extends State<LoginScreen> {
       User? user = userCredential.user;
 
       if (user != null) {
-        // Fetch the user profile data
-        DocumentSnapshot userProfileSnapshot = await FirebaseFirestore.instance
-            .collection('profiles')
-            .doc(user.uid)
-            .get();
+        await user.reload();
+        if (user.emailVerified) {
+          // Fetch the user profile data
+          DocumentSnapshot userProfileSnapshot = await FirebaseFirestore
+              .instance
+              .collection('profiles')
+              .doc(user.uid)
+              .get();
 
-        if (userProfileSnapshot.exists) {
-          Map<String, dynamic> profileData =
-              userProfileSnapshot.data() as Map<String, dynamic>;
+          if (userProfileSnapshot.exists) {
+            Map<String, dynamic> profileData =
+                userProfileSnapshot.data() as Map<String, dynamic>;
 
-          if (mounted) {
-            Provider.of<UserProvider>(context, listen: false)
-                .setProfileData(profileData);
+            if (mounted) {
+              Provider.of<UserProvider>(context, listen: false)
+                  .setProfileData(profileData);
 
-            // Navigate to the homepage dashboard
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const HomePage()),
-            );
-          }
-        } else {
-          if (mounted) {
-            setState(() {
-              // errorMessage = 'Profile not found';
-              showAlertDialog(context, 'Profile not found');
-              isLogIn = false;
-            });
-          }
-        }
-      }
-    } catch (e) {
-      setState(() {
-        // errorMessage = 'Invalid Email or Password';
-        showAlertDialog(context, 'Invalid Email or Password');
-        isLogIn = false;
-      });
-    }
-  }
-
-  Future<void> _signInWithGoogle() async {
-    setState(() {
-      isLogIn = true;
-    });
-
-    try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser!.authentication;
-
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithCredential(credential);
-
-      User? user = userCredential.user;
-
-      if (user != null) {
-        // Fetch the user profile data
-        DocumentSnapshot userProfileSnapshot = await FirebaseFirestore.instance
-            .collection('profiles')
-            .doc(user.uid)
-            .get();
-
-        if (userProfileSnapshot.exists) {
-          Map<String, dynamic> profileData =
-              userProfileSnapshot.data() as Map<String, dynamic>;
-
-          if (mounted) {
-            Provider.of<UserProvider>(context, listen: false)
-                .setProfileData(profileData);
-
-            // Navigate to the homepage dashboard
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const HomePage()),
-            );
-          }
-        } else {
-          if (mounted) {
-            // Navigate to CreateProfileScreen if profile does not exist
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CreateProfileScreen(
-                  username: googleUser.displayName ?? '',
-                  email: googleUser.email,
-                  password: '',
+              // Navigate to the homepage dashboard
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const HomePage()),
+              );
+            }
+          } else {
+            if (mounted) {
+              // Navigate to CreateProfileScreen if profile does not exist
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CreateProfileScreen(
+                    username: user.displayName ?? '',
+                    email: user.email!,
+                    password: '',
+                  ),
                 ),
-              ),
-            );
+              );
+            }
           }
+        } else {
+          showAlertDialog(
+              context, "Please verify your email before logging in.");
+          setState(() {
+            isLogIn = false;
+          });
         }
       }
     } catch (e) {
       setState(() {
-        //errorMessage = 'An error occurred while signing in with Google: $e';
-        showAlertDialog(
-            context, 'An error occurred while signing in with Google: $e');
+        showAlertDialog(context, 'Invalid Email or Password');
         isLogIn = false;
       });
     }
@@ -260,38 +208,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                     ),
                                   ),
-                          ),
-                          const SizedBox(height: 10),
-                          ElevatedButton(
-                            onPressed: isLogIn ? null : _signInWithGoogle,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white, // Button color
-                              foregroundColor: Colors.black, // Text color
-                              fixedSize: const Size(207, 51), // Button Size
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(10),
-                                ),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    'Sign in with Google',
-                                    style: GoogleFonts.cormorant(
-                                      textStyle: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
                           ),
                           const SizedBox(height: 5),
                           Row(
