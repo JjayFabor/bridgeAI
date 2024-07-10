@@ -17,17 +17,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     try {
       final email = _emailController.text;
 
-      // Check if the email is registered
-      final list =
-          // ignore: deprecated_member_use
-          await FirebaseAuth.instance.fetchSignInMethodsForEmail(email);
-      if (list.isEmpty) {
-        setState(() {
-          message = 'This email is not registered in our system.';
-        });
-        return;
-      }
-
       // Send the password reset email
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
 
