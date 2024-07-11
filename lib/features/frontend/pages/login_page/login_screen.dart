@@ -110,7 +110,10 @@ class _LoginScreenState extends State<LoginScreen> {
         width: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color.fromARGB(255, 20, 20, 20), Colors.black],
+            colors: [
+              Color.fromARGB(255, 88, 83, 83),
+              Color.fromARGB(255, 31, 29, 29)
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -146,23 +149,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 50),
-                      Container(
-                        decoration: BoxDecoration(
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              spreadRadius: 5,
-                              blurRadius: 7,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Image.asset(
-                          'assets/welcome.png',
-                          width: 700,
-                          height: 81,
-                          fit: BoxFit.contain,
-                        ),
+                      Image.asset(
+                        'assets/welcome.png',
+                        width: 700,
+                        height: 81,
+                        fit: BoxFit.contain,
                       ),
                       const SizedBox(height: 70),
                       Container(
@@ -333,7 +324,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       color: Colors.white,
                                       shadows: [
                                         Shadow(
-                                          offset: Offset(2, 3),
+                                          offset: Offset(2, 2),
                                           blurRadius: 4,
                                           color: Colors.white,
                                         ),

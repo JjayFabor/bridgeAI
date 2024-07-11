@@ -222,7 +222,7 @@ class _TopicLessonPageState extends State<TopicLessonPage> {
             ),
           ),
         ),
-        backgroundColor: const Color.fromARGB(255, 20, 20, 20),
+        backgroundColor: const Color.fromARGB(255, 88, 83, 83),
         foregroundColor: Colors.white,
       ),
       body: FutureBuilder<Map<String, dynamic>>(

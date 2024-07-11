@@ -101,7 +101,7 @@ class _PracticeQuestionsPageState extends State<PracticeQuestionsPage> {
         height: 250,
         child: Card(
           shadowColor: Colors.black87,
-          color: const Color.fromARGB(255, 20, 20, 20),
+          color: const Color.fromARGB(255, 88, 83, 83),
           elevation: 8,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -110,7 +110,7 @@ class _PracticeQuestionsPageState extends State<PracticeQuestionsPage> {
             direction: FlipDirection.HORIZONTAL,
             front: Container(
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 20, 20, 20),
+                color: const Color.fromARGB(255, 88, 83, 83),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(

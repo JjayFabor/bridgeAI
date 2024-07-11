@@ -5,7 +5,7 @@ import json
 app = Flask(__name__)
 
 # Read the API key from the text file
-with open('lib/features/backend/api_key.txt', 'r') as file:
+with open("lib/features/backend/api_key.txt", "r") as file:
     api_key = file.read().strip()
 
 # Configure with the API key
@@ -45,18 +45,19 @@ topics_model = genai.GenerativeModel(
     safety_settings=safety_settings,
     generation_config=generation_config,
     system_instruction="""You will create a list of 5 main topics for the given subject that helps the student learn on their own. 
-        Make sure the topics cover fundamental and advanced concepts related to the subject and the grade level of the student."""
+        Make sure the topics cover fundamental and advanced concepts related to the subject and the grade level of the student.""",
 )
 
 combined_model = genai.GenerativeModel(
-        model_name="gemini-1.5-pro",
-        safety_settings=safety_settings,
-        generation_config=generation_config,
-        system_instruction="""You will provide detailed explanations and create quizzes for each topic. 
+    model_name="gemini-1.5-pro",
+    safety_settings=safety_settings,
+    generation_config=generation_config,
+    system_instruction="""You will provide detailed explanations and create quizzes for each topic. 
             Ensure the explanations are clear and concise, with real-world examples, key terms, and practice questions. 
             The quizzes should reinforce the concepts and test the student's understanding with multiple-choice questions 
-            and solutions."""
-    )
+            and solutions.""",
+)
+
 
 def reRun_model_if_needed(model, prompt, attempts=5):
     for attempt in range(attempts):
@@ -70,6 +71,7 @@ def reRun_model_if_needed(model, prompt, attempts=5):
             print(f"Attempt {attempt + 1} failed: {e}")
     return None
 
+
 def generate_topics(name, age, grade_level, subject, country):
     prompt = (
         f"Create a list of 5 main topics for a student named {name} who is {age} years old, "
@@ -77,7 +79,7 @@ def generate_topics(name, age, grade_level, subject, country):
         "The topics should be appropriate for the student's grade level and age, covering fundamental concepts related to the subject. "
         "\nIt should be stored in with this JSON format: "
         "{\n"
-        "    \"topics\": [\"topic1\", \"topic2\", \"topic3\", \"topic4\", \"topic5\"]\n"
+        '    "topics": ["topic1", "topic2", "topic3", "topic4", "topic5"]\n'
         "}"
     )
 
@@ -229,16 +231,23 @@ def generate_course_and_quiz(topic):
     return reRun_model_if_needed(combined_model, prompt)
 
 
-@app.route('/generate-topics', methods=['GET'])
+@app.route("/generate-topics", methods=["GET"])
 def generate_topics_route():
-    name = request.args.get('name')
-    age = request.args.get('age')
-    grade_level = request.args.get('grade')
-    country = request.args.get('country')
-    subject = request.args.get('subject')
+    name = request.args.get("name")
+    age = request.args.get("age")
+    grade_level = request.args.get("grade")
+    country = request.args.get("country")
+    subject = request.args.get("subject")
 
     if not all([name, age, grade_level, subject, country]):
-        return jsonify({"error": "Missing one or more required fields: name, age, grade_level, subject, country"}), 400
+        return (
+            jsonify(
+                {
+                    "error": "Missing one or more required fields: name, age, grade_level, subject, country"
+                }
+            ),
+            400,
+        )
 
     topics = generate_topics(name, age, grade_level, subject, country)
     print("Topics:", topics)
@@ -247,15 +256,19 @@ def generate_topics_route():
         json_object = json.loads(topics)
         return jsonify(json_object)
     except json.JSONDecodeError:
-        return jsonify({"error": "Failed to generate valid JSON response from AI model."}), 500
+        return (
+            jsonify({"error": "Failed to generate valid JSON response from AI model."}),
+            500,
+        )
 
-@app.route('/generate-topics-lesson', methods=['GET'])
+
+@app.route("/generate-topics-lesson", methods=["GET"])
 def generate_courses_quiz_route():
-    topic = request.args.get('topic')
+    topic = request.args.get("topic")
 
     if not all([topic]):
         return jsonify({"error": "Missing one or more required fields: topics"}), 400
-    
+
     lesson_topic = generate_course_and_quiz(topic)
     print("Lesson Topics:", lesson_topic)
 
@@ -263,8 +276,11 @@ def generate_courses_quiz_route():
         json_object = json.loads(lesson_topic)
         return jsonify(json_object)
     except json.JSONDecodeError:
-        return jsonify({"error": "Failed to generate valid JSON response from AI model."}), 500
+        return (
+            jsonify({"error": "Failed to generate valid JSON response from AI model."}),
+            500,
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)

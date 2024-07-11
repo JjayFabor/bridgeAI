@@ -38,10 +38,13 @@ class _QuizzesPageState extends State<QuizzesPage> {
   SharedPreferences? _prefs;
   late String _userId;
   final Logger logger = Logger();
+  int _currentIndex = 0;
+  late PageController _pageController;
 
   @override
   void initState() {
     super.initState();
+    _pageController = PageController();
     _initializeUser();
     _initializeQuiz();
   }
@@ -138,7 +141,9 @@ class _QuizzesPageState extends State<QuizzesPage> {
       _selectedAnswers = List<int?>.filled(widget.quizzes.length, null);
       _isSubmitted = false;
       _correctAnswers = 0;
+      _currentIndex = 0; // Reset the index to the first quiz
     });
+    _pageController.jumpToPage(0);
     await _prefs?.remove(
         '$_userId-${widget.subject}-${widget.topic}-${widget.lessonTitle}-answers');
     await _prefs?.remove(
@@ -196,6 +201,30 @@ class _QuizzesPageState extends State<QuizzesPage> {
     }
   }
 
+  void _nextQuiz() {
+    if (_currentIndex < widget.quizzes.length - 1) {
+      setState(() {
+        _currentIndex++;
+      });
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void _prevQuiz() {
+    if (_currentIndex > 0) {
+      setState(() {
+        _currentIndex--;
+      });
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return _prefs == null
@@ -204,56 +233,77 @@ class _QuizzesPageState extends State<QuizzesPage> {
             children: [
               if (!_isSubmitted)
                 Expanded(
-                  child: ListView.builder(
+                  child: PageView.builder(
+                    controller: _pageController,
                     itemCount: widget.quizzes.length,
+                    onPageChanged: (index) {
+                      setState(() {
+                        _currentIndex = index;
+                      });
+                    },
                     itemBuilder: (context, index) {
                       final quiz = widget.quizzes[index];
-                      return Container(
-                        margin: const EdgeInsets.all(8.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              spreadRadius: 2,
-                              blurRadius: 6,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Card(
-                          shape: RoundedRectangleBorder(
+                      return Center(
+                        child: Container(
+                          margin: const EdgeInsets.all(8.0),
+                          width: MediaQuery.of(context).size.width * 0.9,
+                          height: MediaQuery.of(context).size.height * 0.5,
+                          decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                spreadRadius: 2,
+                                blurRadius: 6,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
                           ),
-                          elevation: 4,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  quiz['question'] ?? 'No question provided',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 4,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(
+                                    height: 20,
                                   ),
-                                ),
-                                const SizedBox(height: 8),
-                                ...List.generate(quiz['choices']?.length ?? 0,
-                                    (i) {
-                                  return RadioListTile<int>(
-                                    title: Text(quiz['choices'][i] ??
-                                        'No choice provided'),
-                                    value: i,
-                                    groupValue: _selectedAnswers[index],
-                                    onChanged: (int? value) {
-                                      setState(() {
-                                        _selectedAnswers[index] = value;
-                                      });
-                                    },
-                                  );
-                                }),
-                              ],
+                                  Text(
+                                    quiz['question'] ?? 'No question provided',
+                                    style: const TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Expanded(
+                                    child: ListView(
+                                      children: List.generate(
+                                          quiz['choices']?.length ?? 0, (i) {
+                                        return RadioListTile<int>(
+                                          title: Text(
+                                            quiz['choices'][i] ??
+                                                'No choice provided',
+                                            style:
+                                                const TextStyle(fontSize: 22),
+                                          ),
+                                          value: i,
+                                          groupValue: _selectedAnswers[index],
+                                          onChanged: (int? value) {
+                                            setState(() {
+                                              _selectedAnswers[index] = value;
+                                            });
+                                          },
+                                        );
+                                      }),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -269,7 +319,7 @@ class _QuizzesPageState extends State<QuizzesPage> {
                       children: [
                         Text(
                           'You got $_correctAnswers out of ${widget.quizzes.length} correct.',
-                          style: const TextStyle(fontSize: 18),
+                          style: const TextStyle(fontSize: 20),
                         ),
                         if (_correctAnswers / widget.quizzes.length >= 0.75)
                           Column(
@@ -320,7 +370,7 @@ class _QuizzesPageState extends State<QuizzesPage> {
                                                 quiz['question'] ??
                                                     'No question provided',
                                                 style: const TextStyle(
-                                                  fontSize: 18,
+                                                  fontSize: 20,
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                               ),
@@ -383,13 +433,21 @@ class _QuizzesPageState extends State<QuizzesPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    if (widget.onPrev != null)
+                    if (_currentIndex > 0)
                       ElevatedButton(
-                          onPressed: widget.onPrev, child: const Text('Prev')),
-                    ElevatedButton(
-                      onPressed: _submitQuiz,
-                      child: const Text('Submit'),
-                    ),
+                        onPressed: _prevQuiz,
+                        child: const Text('Prev'),
+                      ),
+                    if (_currentIndex < widget.quizzes.length - 1)
+                      ElevatedButton(
+                        onPressed: _nextQuiz,
+                        child: const Text('Next'),
+                      ),
+                    if (_currentIndex == widget.quizzes.length - 1)
+                      ElevatedButton(
+                        onPressed: _submitQuiz,
+                        child: const Text('Submit'),
+                      ),
                   ],
                 )
             ],

@@ -93,7 +93,7 @@ class SubjectTopicsPageState extends State<SubjectTopicsPage> {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 70,
-        backgroundColor: const Color.fromARGB(255, 20, 20, 20),
+        backgroundColor: const Color.fromARGB(255, 88, 83, 83),
         foregroundColor: Colors.white,
         title: Text(
           'Topics',

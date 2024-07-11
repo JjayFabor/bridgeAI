@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../../global/provider_implementation/user_provider.dart';
+import '../settings_page/setting_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -57,11 +58,11 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-        backgroundColor: const Color.fromARGB(255, 20, 20, 20),
+        backgroundColor: const Color.fromARGB(255, 88, 83, 83),
       ),
       drawer: Drawer(
         child: Container(
-          color: const Color.fromARGB(255, 20, 20, 20), // Dark background color
+          color: const Color.fromARGB(255, 88, 83, 83), // Dark background color
           child: Column(
             children: <Widget>[
               UserAccountsDrawerHeader(
@@ -125,12 +126,6 @@ class _HomePageState extends State<HomePage> {
                 title: const Text('Progress',
                     style: TextStyle(color: Colors.white)),
                 onTap: () {
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(
-                  //     builder: (context) => ProgressPage(userId: userId ?? ''),
-                  //   ),
-                  // );
                   setState(() {
                     _page = 2;
                   });
@@ -143,7 +138,10 @@ class _HomePageState extends State<HomePage> {
                 title: const Text('Settings',
                     style: TextStyle(color: Colors.white)),
                 onTap: () {
-                  // Add the desired functionality here
+                  setState(() {
+                    _page = 3;
+                  });
+                  Navigator.pop(context);
                 },
               ),
               ListTile(
@@ -168,6 +166,8 @@ class _HomePageState extends State<HomePage> {
         return 'Profile';
       case 2:
         return 'Progress';
+      case 3:
+        return 'Setting';
       default:
         return 'Dashboard';
     }
@@ -185,6 +185,8 @@ class _HomePageState extends State<HomePage> {
         break;
       case 2:
         widget = ProgressPage(userId: userId ?? '');
+      case 3:
+        widget = const SettingPage();
       default:
         widget = const HomepageDashboard();
         break;
