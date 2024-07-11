@@ -174,7 +174,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget getSelectedWidget({required int index}) {
-    String? userId = _user?.uid; // Assuming you can retrieve userId from _user
+    String? userId = _user?.uid; // Get the user id
     Widget widget;
     switch (index) {
       case 0:
