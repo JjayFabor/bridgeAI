@@ -42,11 +42,18 @@ class _FormContainerWidgetState extends State<FormContainerWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6.0),
+      margin: const EdgeInsets.symmetric(vertical: 10.0),
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: TextFormField(
         style: const TextStyle(color: Colors.black),
@@ -68,6 +75,7 @@ class _FormContainerWidgetState extends State<FormContainerWidget> {
           filled: true,
           hintText: widget.hintText,
           hintStyle: widget.hintStyle ?? GoogleFonts.aBeeZee(),
+          fillColor: Colors.white,
           errorStyle: const TextStyle(color: Colors.red),
           suffixIcon: widget.isPasswordField == true
               ? GestureDetector(
@@ -78,33 +86,33 @@ class _FormContainerWidgetState extends State<FormContainerWidget> {
                   },
                   child: Icon(
                     _obscureText ? Icons.visibility_off : Icons.visibility,
-                    color: _obscureText == false ? Colors.black : Colors.black,
+                    color: Colors.black,
                   ),
                 )
               : null,
           border: const OutlineInputBorder(
             borderRadius: BorderRadius.all(
-              Radius.circular(10.0),
+              Radius.circular(20.0),
             ),
             borderSide: BorderSide.none,
           ),
           focusedBorder: const OutlineInputBorder(
             borderRadius: BorderRadius.all(
-              Radius.circular(10.0),
+              Radius.circular(20.0),
             ),
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: Color.fromARGB(255, 88, 83, 83)),
           ),
           enabledBorder: const OutlineInputBorder(
             borderRadius: BorderRadius.all(
-              Radius.circular(10.0),
+              Radius.circular(20.0),
             ),
             borderSide: BorderSide.none,
           ),
           errorBorder: const OutlineInputBorder(
             borderRadius: BorderRadius.all(
-              Radius.circular(10.0),
+              Radius.circular(20.0),
             ),
-            borderSide: BorderSide(color: Colors.black),
+            borderSide: BorderSide(color: Colors.red),
           ),
         ),
       ),
