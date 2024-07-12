@@ -434,14 +434,16 @@ class _QuizzesPageState extends State<QuizzesPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     if (_currentIndex > 0)
-                      ElevatedButton(
+                      ElevatedButton.icon(
                         onPressed: _prevQuiz,
-                        child: const Text('Prev'),
+                        icon: const Icon(Icons.arrow_back),
+                        label: const Text('Prev'),
                       ),
                     if (_currentIndex < widget.quizzes.length - 1)
-                      ElevatedButton(
+                      ElevatedButton.icon(
                         onPressed: _nextQuiz,
-                        child: const Text('Next'),
+                        icon: const Icon(Icons.arrow_forward),
+                        label: const Text('Next'),
                       ),
                     if (_currentIndex == widget.quizzes.length - 1)
                       ElevatedButton(
