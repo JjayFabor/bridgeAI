@@ -4,7 +4,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:logger/logger.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../../global/provider_implementation/country_provider.dart';
 import '../../../../global/provider_implementation/user_provider.dart';
+import 'package:bridgeai/features/frontend/widgets/form_container_widget.dart';
+import 'package:bridgeai/features/frontend/widgets/country_dropdown_widget.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -92,7 +96,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
           'country': _countryController.text,
           'username': _usernameController.text,
           'email': _emailController.text,
-          // 'password': _passwordController.text,
         });
 
         if (mounted) {
@@ -103,7 +106,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
             'country': _countryController.text,
             'username': _usernameController.text,
             'email': _emailController.text,
-            // 'password': _passwordController.text,
             'profile_picture': Provider.of<UserProvider>(context, listen: false)
                 .profileData!['profile_picture'],
           });
@@ -130,9 +132,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
       ),
       body: Center(
         child: Container(
-          padding: const EdgeInsets.all(20),
+          width: MediaQuery.of(context).size.width * 0.9,
+          padding: const EdgeInsets.all(30),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color.fromARGB(255, 88, 83, 83),
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
@@ -143,53 +146,127 @@ class _EditProfilePageState extends State<EditProfilePage> {
               ),
             ],
           ),
-          child: Column(
-            children: [
-              TextField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
-              ),
-              TextField(
-                controller: _ageController,
-                decoration: const InputDecoration(labelText: 'Age'),
-                keyboardType: TextInputType.number,
-              ),
-              TextField(
-                controller: _gradeController,
-                decoration: const InputDecoration(labelText: 'Grade Level'),
-                keyboardType: TextInputType.number,
-              ),
-              TextField(
-                controller: _countryController,
-                decoration: const InputDecoration(labelText: 'Country'),
-              ),
-              TextField(
-                controller: _usernameController,
-                decoration: const InputDecoration(labelText: 'Username'),
-              ),
-              TextField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  elevation: 10,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+          child: Form(
+            key: GlobalKey<FormState>(),
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                FormContainerWidget(
+                  hintText: "Name",
+                  hintStyle: GoogleFonts.aBeeZee(
+                      textStyle: const TextStyle(color: Colors.black45)),
+                  controller: _nameController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Name is required';
+                    }
+                    return null;
+                  },
+                ),
+                FormContainerWidget(
+                  hintText: "Age",
+                  hintStyle: GoogleFonts.aBeeZee(
+                      textStyle: const TextStyle(color: Colors.black45)),
+                  isIntegerField: true,
+                  controller: _ageController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Age is required';
+                    }
+                    if (int.tryParse(value) == null) {
+                      return 'Enter a valid age';
+                    }
+                    return null;
+                  },
+                ),
+                FormContainerWidget(
+                  hintText: "Grade Level",
+                  hintStyle: GoogleFonts.aBeeZee(
+                      textStyle: const TextStyle(color: Colors.black45)),
+                  controller: _gradeController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Grade level is required';
+                    }
+                    return null;
+                  },
+                ),
+                Consumer<CountryProvider>(
+                    builder: (context, countryProvider, child) {
+                  return CountryDropdownWidget(
+                    controller: _countryController,
+                    hintStyle: GoogleFonts.aBeeZee(
+                        textStyle: const TextStyle(color: Colors.black45)),
+                    hintText: _countryController.text.isEmpty
+                        ? 'Select your country'
+                        : _countryController.text,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select a country';
+                      }
+                      return null;
+                    },
+                  );
+                }),
+                FormContainerWidget(
+                  hintText: "Username",
+                  hintStyle: GoogleFonts.aBeeZee(
+                      textStyle: const TextStyle(color: Colors.black45)),
+                  controller: _usernameController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Username is required';
+                    }
+                    return null;
+                  },
+                ),
+                FormContainerWidget(
+                  hintText: "Email",
+                  hintStyle: GoogleFonts.aBeeZee(
+                      textStyle: const TextStyle(color: Colors.black45)),
+                  controller: _emailController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Email is required';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 70),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    elevation: 10,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  onPressed: _saveProfile,
+                  child: Text(
+                    'Save',
+                    style: GoogleFonts.cormorant(
+                      textStyle: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                        shadows: [
+                          Shadow(
+                            offset: Offset(2, 2),
+                            blurRadius: 3,
+                            color: Colors.black54,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-                onPressed: _saveProfile,
-                child: const Text('Save'),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                _errorMessage,
-                style: const TextStyle(color: Colors.red),
-              ),
-            ],
+                const SizedBox(height: 10),
+                Text(
+                  _errorMessage,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ],
+            ),
           ),
         ),
       ),

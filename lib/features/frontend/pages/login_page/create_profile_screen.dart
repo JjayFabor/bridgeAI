@@ -1,5 +1,6 @@
 import 'package:bridgeai/features/frontend/widgets/form_container_widget.dart';
 import 'package:bridgeai/global/common/alert_dialog.dart';
+import 'package:bridgeai/global/provider_implementation/country_provider.dart';
 import 'package:bridgeai/global/provider_implementation/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -176,16 +177,21 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                     return null;
                   },
                 ),
-                CountryDropdownWidget(
-                  hintText: "Country",
-                  controller: _countryController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Country is required';
-                    }
-                    return null;
-                  },
-                ),
+                Consumer<CountryProvider>(
+                    builder: (context, countryProvider, child) {
+                  return CountryDropdownWidget(
+                    controller: _countryController,
+                    hintStyle: GoogleFonts.aBeeZee(
+                        textStyle: const TextStyle(color: Colors.black45)),
+                    hintText: 'Select your country',
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select a country';
+                      }
+                      return null;
+                    },
+                  );
+                }),
                 const SizedBox(height: 20),
                 Text(
                   _errorMessage,

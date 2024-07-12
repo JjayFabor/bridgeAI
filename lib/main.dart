@@ -1,3 +1,4 @@
+import 'package:bridgeai/global/provider_implementation/country_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -18,6 +19,8 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => userProvider),
+        ChangeNotifierProvider(
+            create: (_) => CountryProvider()..fetchCountries())
       ],
       child: const MyApp(),
     ),

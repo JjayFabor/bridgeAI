@@ -40,7 +40,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
       body: Container(
         width: double.infinity,
         decoration: const BoxDecoration(
-          color: Color(0xFF008DDA),
+          gradient: LinearGradient(
+            colors: [
+              Color.fromARGB(255, 88, 83, 83),
+              Color.fromARGB(255, 31, 29, 29)
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
         child: SafeArea(
           child: SingleChildScrollView(
@@ -136,6 +143,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     textStyle: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
+                                      color: Colors.white,
                                     ),
                                   ),
                                 ),
