@@ -1,8 +1,28 @@
 from flask import Flask, jsonify, request
+import requests
 import google.generativeai as genai
 import json
 
 app = Flask(__name__)
+
+
+# Fetch All Country
+@app.route("/countries", methods=["GET"])
+def get_countries():
+    response = requests.get("https://restcountries.com/v3.1/all")
+    if response.status_code == 200:
+        countries = [country["name"]["common"] for country in response.json()]
+        # Filter for one-word country names
+        one_word_countries = [
+            country for country in countries if len(country.split()) == 1
+        ]
+        # Sort and limit to 30 countries
+        one_word_countries.sort()
+        limited_countries = one_word_countries[:150]
+        return jsonify(limited_countries)
+    else:
+        return jsonify({"error": "Failed to fetch countries"}), 500
+
 
 # Read the API key from the text file
 with open("lib/features/backend/api_key.txt", "r") as file:
