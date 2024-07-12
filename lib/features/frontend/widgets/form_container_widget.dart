@@ -45,13 +45,25 @@ class _FormContainerWidgetState extends State<FormContainerWidget> {
       margin: const EdgeInsets.symmetric(vertical: 10.0),
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: LinearGradient(
+          colors: [
+            Colors.white,
+            Colors.grey[300]!,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withOpacity(0.2),
             blurRadius: 10,
-            offset: const Offset(0, 5),
+            offset: const Offset(0, 10),
+          ),
+          BoxShadow(
+            color: Colors.white.withOpacity(0.5),
+            blurRadius: 10,
+            offset: const Offset(-5, -5),
           ),
         ],
       ),
@@ -75,7 +87,7 @@ class _FormContainerWidgetState extends State<FormContainerWidget> {
           filled: true,
           hintText: widget.hintText,
           hintStyle: widget.hintStyle ?? GoogleFonts.aBeeZee(),
-          fillColor: Colors.white,
+          fillColor: Colors.white.withOpacity(0.8),
           errorStyle: const TextStyle(color: Colors.red),
           suffixIcon: widget.isPasswordField == true
               ? GestureDetector(

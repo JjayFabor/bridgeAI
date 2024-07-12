@@ -156,50 +156,21 @@ class _LoginScreenState extends State<LoginScreen> {
                         fit: BoxFit.contain,
                       ),
                       const SizedBox(height: 70),
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              spreadRadius: 2,
-                              blurRadius: 5,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                          color: Colors.white,
+                      FormContainerWidget(
+                        controller: _emailController,
+                        hintText: "Email",
+                        hintStyle: GoogleFonts.aBeeZee(
+                          textStyle: const TextStyle(color: Colors.black45),
                         ),
-                        child: FormContainerWidget(
-                          controller: _emailController,
-                          hintText: "Email",
-                          hintStyle: GoogleFonts.aBeeZee(
-                            textStyle: const TextStyle(color: Colors.black45),
-                          ),
-                          isPasswordField: false,
-                        ),
+                        isPasswordField: false,
                       ),
-                      const SizedBox(height: 20),
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.white,
-                              spreadRadius: 2,
-                              blurRadius: 5,
-                              offset: Offset(0, 3),
-                            ),
-                          ],
-                          color: Colors.white,
+                      FormContainerWidget(
+                        controller: _passwordController,
+                        hintText: "Password",
+                        hintStyle: GoogleFonts.aBeeZee(
+                          textStyle: const TextStyle(color: Colors.black45),
                         ),
-                        child: FormContainerWidget(
-                          controller: _passwordController,
-                          hintText: "Password",
-                          hintStyle: GoogleFonts.aBeeZee(
-                            textStyle: const TextStyle(color: Colors.black45),
-                          ),
-                          isPasswordField: true,
-                        ),
+                        isPasswordField: true,
                       ),
                       const SizedBox(height: 20),
                       Align(
