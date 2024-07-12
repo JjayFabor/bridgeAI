@@ -1,6 +1,7 @@
 import 'package:bridgeai/features/frontend/pages/settings_page/change_password.dart';
 import 'package:bridgeai/features/frontend/pages/settings_page/contact_support.dart';
 import 'package:bridgeai/features/frontend/pages/settings_page/deactivate_account.dart';
+import 'package:bridgeai/features/frontend/pages/settings_page/edit_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -41,7 +42,10 @@ class _SettingPageState extends State<SettingPage> {
             leading: const Icon(Icons.edit),
             title: const Text('Edit Profile'),
             onTap: () {
-              // Navigate to Edit Profile Page
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const EditProfilePage()));
             },
           ),
           ListTile(
