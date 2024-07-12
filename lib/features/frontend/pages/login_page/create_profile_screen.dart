@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../widgets/country_dropdown_widget.dart';
 import '../dashboard_page/home_page.dart';
 
 class CreateProfileScreen extends StatefulWidget {
@@ -40,7 +41,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   Future<void> _saveProfile() async {
     if (_formKey.currentState?.validate() ?? false) {
       try {
-        // Ensure the user is authenticated
         User? user = FirebaseAuth.instance.currentUser;
         if (user == null) {
           setState(() {
@@ -49,9 +49,8 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
           return;
         }
 
-        String userId = user.uid; // Get the current user's UID
+        String userId = user.uid;
 
-        // Use userId as the document ID
         await FirebaseFirestore.instance
             .collection('profiles')
             .doc(userId)
@@ -66,7 +65,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
           'userId': userId,
         });
 
-        // Save the profile data to the provider
         if (mounted) {
           Provider.of<UserProvider>(context, listen: false).setProfileData({
             'name': _nameController.text,
@@ -79,7 +77,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
           });
         }
 
-        // showToast(message: "Profile created successfully");
         if (mounted) {
           showAlertDialog(context, "Profile created successfully");
 
@@ -90,7 +87,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
         }
       } catch (e) {
         setState(() {
-          // _errorMessage = 'An error occurred while saving the profile: $e';
           showAlertDialog(
               context, 'An error occurred while saving the profile: $e');
         });
@@ -104,7 +100,14 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
       body: Container(
         width: double.infinity,
         decoration: const BoxDecoration(
-          color: Color(0xFF008DDA),
+          gradient: LinearGradient(
+            colors: [
+              Color.fromARGB(255, 88, 83, 83),
+              Color.fromARGB(255, 31, 29, 29)
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -112,20 +115,27 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
             key: _formKey,
             child: ListView(
               children: [
-                const SizedBox(height: 15),
+                const SizedBox(height: 50),
                 Center(
                   child: Text(
                     'Create your Account',
-                    style: GoogleFonts.cormorant(
+                    style: GoogleFonts.rammettoOne(
                       textStyle: const TextStyle(
-                        fontSize: 48,
+                        fontSize: 44,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            offset: Offset(3.0, 3.0),
+                            blurRadius: 3.0,
+                            color: Colors.black38,
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 15),
+                const SizedBox(height: 50),
                 FormContainerWidget(
                   hintText: "Name",
                   hintStyle: GoogleFonts.aBeeZee(
@@ -138,7 +148,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 5),
                 FormContainerWidget(
                   hintText: "Age",
                   hintStyle: GoogleFonts.aBeeZee(
@@ -155,7 +164,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 5),
                 FormContainerWidget(
                   hintText: "Grade Level",
                   hintStyle: GoogleFonts.aBeeZee(
@@ -168,11 +176,8 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 5),
-                FormContainerWidget(
+                CountryDropdownWidget(
                   hintText: "Country",
-                  hintStyle: GoogleFonts.aBeeZee(
-                      textStyle: const TextStyle(color: Colors.black45)),
                   controller: _countryController,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -181,24 +186,31 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 20),
                 Text(
                   _errorMessage,
                   style: const TextStyle(color: Colors.red),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: _saveProfile,
                   style: ElevatedButton.styleFrom(
+                    elevation: 5,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
                     backgroundColor: const Color(0xFFACE2E1), // Button color
                     foregroundColor: Colors.black, // Text color
+                    shadowColor: Colors.black45,
                   ),
                   child: Text(
                     'Save Profile',
                     style: GoogleFonts.cormorant(
                       textStyle: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 25,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
                   ),
